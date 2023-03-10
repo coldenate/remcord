@@ -1,17 +1,15 @@
 {
+  "author": "Nathan Solis",
+  "name": "Remcord",
+  "description": "A Discord RPC Connection to Remnote. Currently only works on Desktop!",
+  "enableOnMobile": false,
+  "id": "remcord",
   "manifestVersion": 1,
-  "id": "plugin_template",
-  "name": "Plugin Template",
-  "author": "remnote",
-  "repoUrl": "",
   "version": {
     "major": 0,
     "minor": 0,
     "patch": 1
   },
-  "theme": [],
-  "enableOnMobile": false,
-  "description": "",
   "requestNative": false,
   "requiredScopes": [
     {
