@@ -24,6 +24,11 @@ const config = {
     obj[path.parse(el).name + SANDBOX_SUFFIX] = el;
     return obj;
   }, {}),
+  node: {
+    __dirname: true,
+    __filename: true,
+    global: true,
+  },
 
   output: {
     path: resolve(__dirname, 'dist'),
@@ -44,10 +49,15 @@ const config = {
           minify: false,
         },
       },
+      // {
+      //   test: /\.(ts|tsx|jsx|js)?$/,
+      //   use: ['resolve-url-loader'],
+      //   exclude: /node_modules/,
+      // },
       {
         test: /\.css$/i,
         use: [
-          isDevelopment ? "style-loader" : MiniCssExtractPlugin.loader,
+          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
           { loader: 'css-loader', options: { url: false } },
           'postcss-loader',
         ],
@@ -55,9 +65,11 @@ const config = {
     ],
   },
   plugins: [
-    isDevelopment ? undefined : new MiniCssExtractPlugin({
-      filename: '[name].css',
-    }),
+    isDevelopment
+      ? undefined
+      : new MiniCssExtractPlugin({
+          filename: '[name].css',
+        }),
     new HtmlWebpackPlugin({
       templateContent: `
       <body></body>
@@ -88,9 +100,9 @@ const config = {
     }),
     new CopyPlugin({
       patterns: [
-        {from: 'public', to: ''},
-        {from: 'README.md', to: ''}
-      ]
+        { from: 'public', to: '' },
+        { from: 'README.md', to: '' },
+      ],
     }),
     fastRefresh,
   ].filter(Boolean),

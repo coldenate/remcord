@@ -1,9 +1,9 @@
 import { declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
+// import { updateActivity, clientLogin } from './rpc';
 
 async function onActivate(plugin: ReactRNPlugin) {
-  // Register settings
   await plugin.settings.registerStringSetting({
     id: 'name',
     title: 'What is your Name?',
@@ -24,10 +24,11 @@ async function onActivate(plugin: ReactRNPlugin) {
 
   // A command that inserts text into the editor if focused.
   await plugin.app.registerCommand({
-    id: 'editor-command',
-    name: 'Editor Command',
+    id: 'discord-connect',
+    name: 'Connect to Discord Gateway',
     action: async () => {
-      plugin.editor.insertPlainText('Hello World!');
+      console.log('Hello world@!');
+      // clientLogin();
     },
   });
 

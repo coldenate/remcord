@@ -4,6 +4,7 @@
   "description": "A Discord RPC Connection to Remnote. Currently only works on Desktop!",
   "enableOnMobile": false,
   "id": "remcord",
+  "repoUrl": "https://github.com/coldenate/remcord",
   "manifestVersion": 1,
   "version": {
     "major": 0,
@@ -14,7 +15,7 @@
   "requiredScopes": [
     {
       "type": "All",
-      "level": "Read"
+      "level": "ReadCreateModify"
     }
   ]
 }
