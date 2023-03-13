@@ -40,6 +40,7 @@ const config = {
   },
   module: {
     rules: [
+      { test: /\.worker\.js$/, use: { loader: 'worker-loader' } },
       {
         test: /\.(ts|tsx|jsx|js)?$/,
         loader: 'esbuild-loader',
