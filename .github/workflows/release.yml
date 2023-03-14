@@ -50,8 +50,18 @@ jobs:
           zip -r dist/RemCordPlugin.zip RemCordPlugin/ -x "RemCordPlugin/node_modules/*"
           cd ..
 
-      - name: upload dist as artifact
-        uses: actions/upload-artifact@v2
+      # - name: upload dist as artifact
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: plugin
+      #     path: dist
+
+      # upload the zip file to the release
+      - name: upload zip file to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: plugin
-          path: dist
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/RemCordPlugin.zip
+          asset_name: RemCordPlugin.zip
+          tag: ${{ github.event.release.tag_name }}
+          overwrite: trues
