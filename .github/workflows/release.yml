@@ -31,9 +31,9 @@ jobs:
           MINOR=$(echo $VERSION | cut -d. -f2)
           PATCH=$(echo $VERSION | cut -d. -f3)
           # replace the version in the manifest.json
-          sed -i "s/\"major\": [0-9]*/\"major\": $MAJOR/" RemCordPlugin/public/manifest.json
-          sed -i "s/\"minor\": [0-9]*/\"minor\": $MINOR/" RemCordPlugin/public/manifest.json
-          sed -i "s/\"patch\": [0-9]*/\"patch\": $PATCH/" RemCordPlugin/public/manifest.json
+          sed -i "s/\"major\": [0-9]*/\"major\": $MAJOR/" ./public/manifest.json
+          sed -i "s/\"minor\": [0-9]*/\"minor\": $MINOR/" ./public/manifest.json
+          sed -i "s/\"patch\": [0-9]*/\"patch\": $PATCH/" ./public/manifest.json
 
       # Runs a single command using the runners shell
       - name: install zip
@@ -47,7 +47,7 @@ jobs:
       - name: zip the folder RemCordPlugin into a zip file and make it in dist folder
         run: |
           mkdir dist
-          zip -r dist/RemCordPlugin.zip RemCordPlugin/ -x "RemCordPlugin/node_modules/*"
+          zip -r dist/RemCordPlugin.zip ./ -x "./node_modules/*"
           cd ..
 
       # - name: upload dist as artifact
