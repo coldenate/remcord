@@ -64,4 +64,4 @@ jobs:
           file: dist/RemCordPlugin.zip
           asset_name: RemCordPlugin.zip
           tag: ${{ github.event.release.tag_name }}
-          overwrite: trues
+          overwrite: true
