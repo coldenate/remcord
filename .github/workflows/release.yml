@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Bump Plugin Version and Bundle Plugin
+name: Release
 
 # Controls when the workflow will run
 on:
@@ -50,11 +48,11 @@ jobs:
         run: |
           mkdir dist
           cd RemCordPlugin
-          zip -r -j ../dist/RemCordPlugin.zip ./*
+          zip -r -j ../dist/RemCordPlugin.zip .
           cd ..
 
       - name: upload dist as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: themes
+          name: plugin
           path: dist
