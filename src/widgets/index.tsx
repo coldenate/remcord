@@ -2,10 +2,7 @@ import { declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plug
 import '../style.css';
 import '../App.css';
 // import { updateActivity, clientLogin } from './rpc';
-const worker = new Worker('./worker.js');
-worker.onmessage = (event) => {
-  console.log(event.data);
-};
+
 async function onActivate(plugin: ReactRNPlugin) {
   await plugin.settings.registerBooleanSetting({
     id: 'idle-check',
