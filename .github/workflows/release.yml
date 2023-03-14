@@ -47,8 +47,7 @@ jobs:
       - name: zip the folder RemCordPlugin into a zip file and make it in dist folder
         run: |
           mkdir dist
-          cd RemCordPlugin
-          zip -r -j ../dist/RemCordPlugin.zip .
+          zip -r -j ../dist/RemCordPlugin.zip RemCordPlugin
           cd ..
 
       - name: upload dist as artifact
