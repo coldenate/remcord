@@ -1,7 +1,9 @@
-import { declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
+import { AppEvents, declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
 // import { updateActivity, clientLogin } from './rpc';
+
+const port = 3093;
 
 async function onActivate(plugin: ReactRNPlugin) {
   await plugin.settings.registerBooleanSetting({
@@ -46,6 +48,38 @@ async function onActivate(plugin: ReactRNPlugin) {
     id: 'discord-connect',
     name: 'Connect to Discord Gateway',
     action: async () => {},
+  });
+
+  // Defining listeners
+
+  plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
+    setTimeout(async () => {
+      // send a post request to the discord gateway
+      console.log('Queue Is Begin');
+      const myHeaders: HeadersInit = new Headers();
+      myHeaders.append('Content-Type', 'application/json');
+
+      const raw = JSON.stringify({
+        details: 'RemNote',
+        state: 'Studying in Queue',
+        largeImageKey: 'mocha_logo',
+        largeImageText: 'RemNote',
+        smallImageKey: 'transparent_icon_logo',
+        smallImageText: 'RemNote',
+      });
+
+      const requestOptions: RequestInit = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow',
+      };
+
+      fetch(`http://localhost:${port}/activity`, requestOptions)
+        .then((response: Response): Promise<string> => response.text())
+        .then((result: string): void => console.log(result))
+        .catch((error: Error): void => console.log('error', error));
+    }, 25);
   });
 
   // Show a toast notification to the user.
