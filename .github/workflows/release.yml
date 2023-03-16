@@ -15,7 +15,7 @@ jobs:
 
       - name: Zip repository
         run: |
-          zip -r repo.zip ./* -x .git/\* .github/\* .gitignore .gitattri
+          zip -r repo.zip ./* -x .git/\* .github/\* .gitignore 
           mkdir -p artifacts
           mv repo.zip artifacts/
 
