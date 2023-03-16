@@ -15,14 +15,14 @@ jobs:
 
       - name: Zip repository
         run: |
-          zip -r repo.zip ./*
+          zip -r repo.zip ./* -x .git/\* .github/\* .gitignore .gitattri
           mkdir -p artifacts
           mv repo.zip artifacts/
 
       - name: Upload zip as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: repo.zip
+          name: plugin
           path: artifacts/repo.zip
 
       - name: Create release
@@ -45,5 +45,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: artifacts/repo.zip
-          asset_name: repo.zip
+          asset_name: plugin
           asset_content_type: application/zip
