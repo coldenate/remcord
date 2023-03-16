@@ -15,7 +15,7 @@ jobs:
 
       - name: Zip repository
         run: |
-          zip -r repo.zip ./* -x .git/\* .github/\* .gitignore 
+          zip -r repo.zip ./* -x .git/\* .github/\* .gitignore
           mkdir -p artifacts
           mv repo.zip artifacts/
 
@@ -23,7 +23,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: plugin
-          path: artifacts/repo.zip
+          path: artifacts
 
       - name: Create release
         id: create_release
