@@ -1,9 +1,16 @@
 import { AppEvents, declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
 import '../style.css';
 import '../App.css';
+import { sendPresence } from '../funcs/update_presence';
+import { getPluginVersion } from '../funcs/getPluginVersion';
+
 // import { updateActivity, clientLogin } from './rpc';
 
 const port = 3093;
+
+let elapsedTime = new Date();
+
+const pluginVersion = getPluginVersion();
 
 async function onActivate(plugin: ReactRNPlugin) {
   await plugin.settings.registerBooleanSetting({
@@ -50,35 +57,46 @@ async function onActivate(plugin: ReactRNPlugin) {
     action: async () => {},
   });
 
-  // Defining listeners
+  await plugin.app.registerCommand({
+    id: 'get-version',
+    name: 'Get Plugin Version',
+    action: async () => {
+      await plugin.app.toast(`RemCord v${pluginVersion}`);
+    },
+  });
 
-  plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
+  // Defining listeners
+  plugin.event.addListener(AppEvents.QueueEnter, undefined, async (data) => {
     setTimeout(async () => {
       // send a post request to the discord gateway
       console.log('Queue Is Begin');
-      const myHeaders: HeadersInit = new Headers();
-      myHeaders.append('Content-Type', 'application/json');
-
-      const raw = JSON.stringify({
-        details: 'RemNote',
-        state: 'Studying in Queue',
+      sendPresence({
+        details: 'Studying Flashcard Queue',
+        state: `num cards left`,
         largeImageKey: 'mocha_logo',
-        largeImageText: 'RemNote',
+        largeImageText: `RemCord v${pluginVersion}`,
         smallImageKey: 'transparent_icon_logo',
-        smallImageText: 'RemNote',
+        smallImageText: 'Maybe the Daily Goal can go here?',
+        startTimestamp: elapsedTime,
+        port: port,
       });
+    }, 25);
+  });
 
-      const requestOptions: RequestInit = {
-        method: 'POST',
-        headers: myHeaders,
-        body: raw,
-        redirect: 'follow',
-      };
-
-      fetch(`http://localhost:${port}/activity`, requestOptions)
-        .then((response: Response): Promise<string> => response.text())
-        .then((result: string): void => console.log(result))
-        .catch((error: Error): void => console.log('error', error));
+  plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
+    setTimeout(async () => {
+      // send a post request to the discord gateway saying the user is idle
+      console.log('Queue Is End');
+      sendPresence({
+        details: 'Idle',
+        state: 'Not Studying',
+        largeImageKey: 'mocha_logo',
+        largeImageText: `RemCord v${pluginVersion}`,
+        smallImageKey: 'transparent_icon_logo',
+        smallImageText: 'Maybe the Daily Goal can go here?',
+        startTimestamp: elapsedTime,
+        port: port,
+      });
     }, 25);
   });
 
@@ -91,6 +109,8 @@ async function onActivate(plugin: ReactRNPlugin) {
   // });
 }
 
-async function onDeactivate(_: ReactRNPlugin) {}
+async function onDeactivate(_: ReactRNPlugin) {
+  sendPresence({ destroy: true, port: port });
+}
 
 declareIndexPlugin(onActivate, onDeactivate);

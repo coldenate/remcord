@@ -5,8 +5,9 @@ interface SendPresenceArgs {
   largeImageText?: string;
   smallImageKey?: string;
   smallImageText?: string;
-  date?: number;
+  startTimestamp?: number | Date;
   port?: number;
+  destroy?: boolean;
 }
 
 function sendPresence(args: SendPresenceArgs) {
@@ -17,8 +18,10 @@ function sendPresence(args: SendPresenceArgs) {
     largeImageText = '',
     smallImageKey = '',
     smallImageText = '',
-    date = 0,
+    startTimestamp: date = 0,
     port = 3093,
+    destroy = false,
+    
   } = args;
 
   const myHeaders: HeadersInit = new Headers();
