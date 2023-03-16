@@ -1,7 +1,7 @@
 {
   "author": "Nathan Solis",
-  "name": "Remcord",
-  "description": "A Discord RPC Connection to Remnote. Currently only works on Desktop!",
+  "name": "RemCord",
+  "description": "A Discord RPC Connection to RemNote. Currently only works on Desktop!",
   "enableOnMobile": false,
   "id": "remcord",
   "repoUrl": "https://github.com/coldenate/remcord",
