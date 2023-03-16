@@ -13,16 +13,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: copy everything to artifacts
-        run: |
-          mkdir artifacts
-          cp -r . artifacts
+        # install npm
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '19'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
 
       - name: Upload zip as artifact
         uses: actions/upload-artifact@v2
         with:
           name: plugin
-          path: artifacts
+          path: ./PluginZip.zip
 
       - name: Create release
         id: create_release
