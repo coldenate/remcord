@@ -1,55 +1,55 @@
-name: Zip and Release
+# name: Zip and Release
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  zip_and_release:
-    runs-on: ubuntu-latest
+# jobs:
+#   zip_and_release:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
 
-        # install npm
-      - name: Install Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '19'
+#         # install npm
+#       - name: Install Node.js
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: '19'
 
-      - name: Install dependencies
-        run: npm install
+#       - name: Install dependencies
+#         run: npm install
 
-      - name: Build
-        run: npm run build
+#       - name: Build
+#         run: npm run build
 
-      - name: Upload zip as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: plugin
-          path: ./PluginZip.zip
+#       - name: Upload zip as artifact
+#         uses: actions/upload-artifact@v2
+#         with:
+#           name: plugin
+#           path: ./PluginZip.zip
 
-      - name: Create release
-        id: create_release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: false
+#       - name: Create release
+#         id: create_release
+#         if: startsWith(github.ref, 'refs/tags/')
+#         uses: actions/create-release@v1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           tag_name: ${{ github.ref }}
+#           release_name: Release ${{ github.ref }}
+#           draft: true
+#           prerelease: false
 
-      - name: Upload zip to release assets
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/repo.zip
-          asset_name: plugin
-          asset_content_type: application/zip
+#       - name: Upload zip to release assets
+#         if: startsWith(github.ref, 'refs/tags/')
+#         uses: actions/upload-release-asset@v1
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         with:
+#           upload_url: ${{ steps.create_release.outputs.upload_url }}
+#           asset_path: artifacts/repo.zip
+#           asset_name: plugin
+#           asset_content_type: application/zip
