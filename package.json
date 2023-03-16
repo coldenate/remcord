@@ -12,6 +12,7 @@
     "@remnote/plugin-sdk": "^0.0.18",
     "@xhayper/discord-rpc": "^1.0.15",
     "bufferutil": "^4.0.7",
+    "clsx": "^1.2.1",
     "discord-rpc": "^4.0.1",
     "node-loader": "^2.0.0",
     "react": "^17.0.2",

@@ -1,5 +1,4 @@
 import { AppEvents, declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@remnote/plugin-sdk';
-import '../style.css';
 import '../App.css';
 import { sendPresence } from '../funcs/update_presence';
 import { getPluginVersion } from '../funcs/getPluginVersion';
@@ -9,8 +8,26 @@ import { getPluginVersion } from '../funcs/getPluginVersion';
 const port = 3093;
 
 let elapsedTime = new Date();
-
+let aliveOrNah = { heatbeat: true };
 const pluginVersion = getPluginVersion();
+function sendHeartbeat() {
+  const myHeaders: HeadersInit = new Headers();
+  myHeaders.append('Content-Type', 'application/json');
+
+  const raw = JSON.stringify(aliveOrNah);
+
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+    redirect: 'follow',
+  };
+
+  fetch(`http://localhost:${port}/heartbeat`, requestOptions)
+    .then((response: Response): Promise<string> => response.text())
+    .then((result: string): void => console.log(result))
+    .catch((error: Error): void => console.log('error', error));
+}
 
 async function onActivate(plugin: ReactRNPlugin) {
   await plugin.settings.registerBooleanSetting({
@@ -50,12 +67,12 @@ async function onActivate(plugin: ReactRNPlugin) {
     defaultValue: true,
   });
 
-  // A command that inserts text into the editor if focused.
-  await plugin.app.registerCommand({
-    id: 'discord-connect',
-    name: 'Connect to Discord Gateway',
-    action: async () => {},
-  });
+  // // A command that inserts text into the editor if focused.
+  // await plugin.app.registerCommand({
+  //   id: 'discord-connect',
+  //   name: 'Connect to Discord Gateway',
+  //   action: async () => {},
+  // });
 
   await plugin.app.registerCommand({
     id: 'get-version',
@@ -64,19 +81,18 @@ async function onActivate(plugin: ReactRNPlugin) {
       await plugin.app.toast(`RemCord v${pluginVersion}`);
     },
   });
-
   // Defining listeners
   plugin.event.addListener(AppEvents.QueueEnter, undefined, async (data) => {
     setTimeout(async () => {
       // send a post request to the discord gateway
-      console.log('Queue Is Begin');
       sendPresence({
-        details: 'Studying Flashcard Queue',
-        state: `num cards left`,
+        details: 'Flashcard Queue',
+        // state: `num cards left`,
+        state: `Studying`,
         largeImageKey: 'mocha_logo',
         largeImageText: `RemCord v${pluginVersion}`,
         smallImageKey: 'transparent_icon_logo',
-        smallImageText: 'Maybe the Daily Goal can go here?',
+        // smallImageText: 'Maybe the Daily Goal can go here?',
         startTimestamp: elapsedTime,
         port: port,
       });
@@ -86,31 +102,49 @@ async function onActivate(plugin: ReactRNPlugin) {
   plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
     setTimeout(async () => {
       // send a post request to the discord gateway saying the user is idle
-      console.log('Queue Is End');
+
       sendPresence({
         details: 'Idle',
         state: 'Not Studying',
         largeImageKey: 'mocha_logo',
         largeImageText: `RemCord v${pluginVersion}`,
         smallImageKey: 'transparent_icon_logo',
-        smallImageText: 'Maybe the Daily Goal can go here?',
+        // smallImageText: 'Maybe the Daily Goal can go here?',
         startTimestamp: elapsedTime,
         port: port,
       });
     }, 25);
   });
 
+  plugin.event.addListener(AppEvents.EditorTextEdited, undefined, async (data) => {
+    setTimeout(async () => {
+      // send a post request to the discord gateway saying the user is editing!
+      sendPresence({
+        details: 'Rem Editor',
+        state: await plugin.settings.getSetting('editing-text'),
+        largeImageKey: 'mocha_logo',
+        largeImageText: `RemCord v${pluginVersion}`,
+        smallImageKey: 'transparent_icon_logo',
+        // smallImageText: 'Maybe the Daily Goal can go here?',
+        startTimestamp: elapsedTime,
+        port: port,
+      });
+    }, 25);
+  });
+
+  // plugin.event.addListener(AppEvents.onDeactivate, undefined, async (data) => {
+  //   // console log ADJKHFBSDJKHFBSDJKHFBSDJKFHBSD
+  //   console.log('wrapping up!');
+  //   sendPresence({ destroy: true, port: port });
+  // });
+
   // Show a toast notification to the user.
   await plugin.app.toast('Discord RPC Extension Loaded!');
 
-  // // Register a sidebar widget.
-  // await plugin.app.registerWidget('sample_widget', WidgetLocation.RightSidebar, {
-  //   dimensions: { height: 'auto', width: '100%' },
-  // });
+
 }
 
-async function onDeactivate(_: ReactRNPlugin) {
-  sendPresence({ destroy: true, port: port });
-}
+async function onDeactivate(_: ReactRNPlugin) {}
 
 declareIndexPlugin(onActivate, onDeactivate);
+export { sendHeartbeat };
