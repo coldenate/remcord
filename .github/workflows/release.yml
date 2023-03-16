@@ -15,9 +15,8 @@ jobs:
 
       - name: Zip repository
         run: |
-          zip -r repo.zip ./* -x .git/\* .github/\* .gitignore
           mkdir -p artifacts
-          mv repo.zip artifacts/
+          zip -r ./artifacts/repo.zip ./* -x .git/\* .github/\* .gitignore
 
       - name: Upload zip as artifact
         uses: actions/upload-artifact@v2
