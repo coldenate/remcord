@@ -8,7 +8,7 @@ import { getPluginVersion } from '../funcs/getPluginVersion';
 const port = 3093;
 
 let elapsedTime = new Date();
-let aliveOrNah = { heatbeat: true };
+let aliveOrNah = { heartbeat: true };
 const pluginVersion = getPluginVersion();
 function sendHeartbeat() {
   const myHeaders: HeadersInit = new Headers();
@@ -28,6 +28,12 @@ function sendHeartbeat() {
     .then((result: string): void => console.log(result))
     .catch((error: Error): void => console.log('error', error));
 }
+
+setTimeout(() => {
+  setInterval(() => {
+    sendHeartbeat();
+  }, 5000);
+}, 25);
 
 async function onActivate(plugin: ReactRNPlugin) {
   await plugin.settings.registerBooleanSetting({
@@ -99,6 +105,23 @@ async function onActivate(plugin: ReactRNPlugin) {
     }, 25);
   });
 
+  plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
+    setTimeout(async () => {
+      // send a post request to the discord gateway
+      sendPresence({
+        details: 'Flashcard Queue',
+        // state: `num cards left`,
+        state: `Studying`,
+        largeImageKey: 'mocha_logo',
+        largeImageText: `RemCord v${pluginVersion}`,
+        smallImageKey: 'transparent_icon_logo',
+        // smallImageText: 'Maybe the Daily Goal can go here?',
+        startTimestamp: elapsedTime,
+        port: port,
+      });
+    }, 25);
+  });
+
   plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
     setTimeout(async () => {
       // send a post request to the discord gateway saying the user is idle
@@ -140,11 +163,12 @@ async function onActivate(plugin: ReactRNPlugin) {
 
   // Show a toast notification to the user.
   await plugin.app.toast('Discord RPC Extension Loaded!');
-
-
 }
 
-async function onDeactivate(_: ReactRNPlugin) {}
+async function onDeactivate(_: ReactRNPlugin) {
+  console.log('deactivating!');
+}
 
 declareIndexPlugin(onActivate, onDeactivate);
+
 export { sendHeartbeat };
