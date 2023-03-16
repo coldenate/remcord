@@ -13,10 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Zip repository
+      - name: zip files
         run: |
-          mkdir -p artifacts
-          zip -r -j ./artifacts/plugin.zip ./* -x .git/\* .github/\* .gitignore
+          mkdir artifacts
+          zip -r artifacts/repo.zip .
+
 
       - name: Upload zip as artifact
         uses: actions/upload-artifact@v2
