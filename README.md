@@ -13,7 +13,7 @@ As you traverse RemNote, the extension will be automatically updating your prese
 
 1. Download and run the `RemCordHelper` application from the [releases](https://github.com/coldenate/RemCordHelper/releases).
 2. Open the Application and check for the `Connected to Discord` green light.
-3. Open RemNote and download the RemCord Plugin from the [RemNote Plugin Store](TODO: ADD LINK).
+3. Open RemNote and download the RemCord Plugin from the [RemNote Plugin Store](https://remnote.com/plugins/remcord).
 4. If not already connected, run the `Connect to Discord Gateway` command on RemNote to begin the connection!
 5. If the helper application is running, you should see the `Connected to RemNote` green light.
 6. You're all set! Start studying!!
