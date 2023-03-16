@@ -15,7 +15,7 @@ jobs:
 
       - name: Zip repository
         run: |
-          zip -r repo.zip .
+          zip -r repo.zip ./*
           mkdir -p artifacts
           mv repo.zip artifacts/
 
