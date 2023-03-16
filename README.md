@@ -4,8 +4,6 @@
 
 A Discord RPC Connection to Remnote. Currently only works on Desktop!
 
-## *TO RemNote Code Reviewers: Please read [#8](https://github.com/coldenate/remcord/issues/8)*
-
 ## Usage
 
 You can use RemCord with your Desktop installation of Remnote!
@@ -23,7 +21,7 @@ As you traverse RemNote, the extension will be automatically updating your prese
 ## Thanks to
 
 - @xhayper for the [Discord RPC](https://github.com/xhayper/discord-rpc)!
-- @bjsi for the encouragement and technical help!
+- @bjsi for the encouragement and technical help! I asked many questions on the Discord, and he was always there to help! *Thank you so much!* 🙏
 - RemNote for the amazing tool and documentation!
 
 ## Notes (pun intended)
