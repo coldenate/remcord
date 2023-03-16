@@ -13,11 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: zip files
+      - name: copy everything to artifacts
         run: |
           mkdir artifacts
-          zip -r artifacts/repo.zip .
-
+          cp -r . artifacts
 
       - name: Upload zip as artifact
         uses: actions/upload-artifact@v2
