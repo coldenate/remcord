@@ -21,13 +21,13 @@ function sendPresence(args: SendPresenceArgs) {
     startTimestamp: date = 0,
     port = 3093,
     destroy = false,
-    
   } = args;
 
   const myHeaders: HeadersInit = new Headers();
   myHeaders.append('Content-Type', 'application/json');
 
   const raw = JSON.stringify({
+    destroy,
     details,
     state,
     largeImageKey,
