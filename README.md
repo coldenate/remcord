@@ -20,8 +20,8 @@ As you traverse RemNote, the extension will be automatically updating your prese
 
 ## Thanks to
 
-- @xhayper for the [Discord RPC](https://github.com/xhayper/discord-rpc)!
-- @bjsi for the encouragement and technical help! I asked many questions on the Discord, and he was always there to help! *Thank you so much!* 🙏
+- [xhayper](https://github.com/xhayper) for the [Discord RPC](https://github.com/xhayper/discord-rpc)!
+- [bjsi](https://github.com/bjsi) for the encouragement and technical help! I asked many questions on the Discord, and he was always there to help! *Thank you so much!* 🙏
 - RemNote for the amazing tool and documentation!
 
 ## Notes (pun intended)
