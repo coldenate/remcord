@@ -24,6 +24,7 @@ As you traverse RemNote, the extension will be automatically updating your prese
 ### Troubleshooting
 
 - Restart the RemCordHelper app **with `Discord` *and* `RemNote` already open.**
+  - Then, start typing text in a document. *This specifically triggers RemCord to update your RPC*.
 
 ## Thanks to
 
