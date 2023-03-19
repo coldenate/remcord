@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="./public/rn-profile-logo.svg" alt="Remnote Horiz Logo" width="400" height="200"><br/>
+<img src="https://raw.githubusercontent.com/coldenate/remcord/main/public/rn-profile-logo.svg" alt="Remnote Horiz Logo" width="400" height="200"><br/>
 RemCord - 💬 Discord RPC for RemNote 📚</h1>
 
 <h3 align="center">A Discord RPC Connection to Remnote. Currently only works on Desktop!</h3>
