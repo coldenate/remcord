@@ -2,8 +2,14 @@ import { AppEvents, declareIndexPlugin, ReactRNPlugin, WidgetLocation } from '@r
 import '../App.css';
 import { sendPresence } from '../funcs/update_presence';
 import { getPluginVersion } from '../funcs/getPluginVersion';
+import { getHelperVersion } from '../funcs/getHelperVersion';
 
-// import { updateActivity, clientLogin } from './rpc';
+// TODO: Create Real Idle Activity
+// all we do is keep track of the time between the last QueueCardComplete or the last EditorTextEdited (fires every time text is added 🔥) and IF remnotePluginAlive is true AND IF the time is greater than given time,	set the activity to idle
+
+// TODO: Create method that allows the first request from remnote that is not an activity to set the activity to idle,
+// but once that happens, we keep track of remnote session. If remnote session is true, then we don't set the activity to idle
+// then when we detect remnote is closed, we set the remnote session to false.
 
 const port = 3093;
 
@@ -25,7 +31,7 @@ function sendHeartbeat() {
 
   fetch(`http://localhost:${port}/heartbeat`, requestOptions)
     .then((response: Response): Promise<string> => response.text())
-    .then((result: string): void => console.log(result))
+    // .then((result: string): void => console.log(result))
     .catch((error: Error): void => console.log('error', error));
 }
 
@@ -162,7 +168,8 @@ async function onActivate(plugin: ReactRNPlugin) {
   // });
 
   // Show a toast notification to the user.
-  await plugin.app.toast('Discord RPC Extension Loaded!');
+  await plugin.app.toast(`RemCord v${pluginVersion} Loaded!`);
+  await plugin.app.toast(`RemCord Helper ${await getHelperVersion()}`);
 }
 
 async function onDeactivate(_: ReactRNPlugin) {
