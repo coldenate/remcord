@@ -36,6 +36,6 @@ As you traverse RemNote, the extension will be automatically updating your prese
 
 ## Notes (pun intended)
 
-In my [rant](./rant.md) I talk about some things with this project. I'd love to hear your thoughts!
+In my [shared thoughts](./thoughts.md) I talk about some things with this project. I'd love to hear your thoughts!
 
 > If you'd like to help with that, feel free to make a pull request, or contact me on Discord! (cold#8448 | I am on the [RemNote official Discord Server](https://discord.gg/t5MCBFnWEe) too!)
