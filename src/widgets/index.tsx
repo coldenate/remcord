@@ -131,6 +131,12 @@ async function onActivate(plugin: ReactRNPlugin) {
   });
 
   await plugin.settings.registerBooleanSetting({
+    id: 'notifs',
+    title: 'Should RemCord show notifications?',
+    defaultValue: true,
+  });
+
+  await plugin.settings.registerBooleanSetting({
     id: 'idle-check',
     title: 'Should RemCord check for idle?',
     defaultValue: true,
@@ -218,18 +224,20 @@ async function onActivate(plugin: ReactRNPlugin) {
   await pullSettings();
 
   // Show a toast notification to the user.
-  await plugin.app.toast(
-    `RemCord v${pluginVersion} Loaded!\nRemCord Helper ${await getHelperVersion()}`
-  );
-
-  if (Math.floor(Math.random() * 7) === 0) {
-    await plugin.app.toast('Fun Fact: You can disable these notifications in settings!');
-  }
-
-  if ((await getHelperVersion()) !== DESIRED_VERSIION_HELPER) {
+  if (await plugin.settings.getSetting('notifs')) {
     await plugin.app.toast(
-      `RemCord Helper is out of date! Please update to ${DESIRED_VERSIION_HELPER}\nVisit the Github. Delete the old helper. \nDownload the New One!`
+      `RemCord v${pluginVersion} Loaded!\nRemCord Helper ${await getHelperVersion()}`
     );
+
+    if (Math.floor(Math.random() * 7) === 0) {
+      await plugin.app.toast('Fun Fact: You can disable these notifications in settings!');
+    }
+
+    if ((await getHelperVersion()) !== DESIRED_VERSIION_HELPER) {
+      await plugin.app.toast(
+        `RemCord Helper is out of date! Please update to ${DESIRED_VERSIION_HELPER}\nVisit the Github. Delete the old helper. \nDownload the New One!`
+      );
+    }
   }
 
   async function pullSettings() {
@@ -237,7 +245,7 @@ async function onActivate(plugin: ReactRNPlugin) {
     idleCheck = await plugin.settings.getSetting('idle-check');
   }
   sendHeartbeat();
-  setIdle(plugin);
+  setIdle();
 }
 
 async function setAsQueue(plugin: ReactRNPlugin) {
