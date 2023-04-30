@@ -46,7 +46,7 @@ function sendHeartbeat() {
     .catch((error: Error): void => console.log('error', error));
 }
 
-function checkIdle(plugin: ReactRNPlugin) {
+function checkIdle() {
   let tempTime = allowedIdleTime * 60000;
 
   if (new Date().getTime() - idleElapsedTime.getTime() > tempTime) {
@@ -370,7 +370,7 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
   }
 }
 
-function setIdle(reactivePlugin: ReactRNPlugin) {
+function setIdle() {
   if (!idleCheck) {
     return;
   }
