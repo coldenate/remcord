@@ -1,5 +1,5 @@
 interface SendPresenceArgs {
-  details?: string;
+  details?: string | undefined | unknown;
   state?: string | null;
   largeImageKey?: string;
   largeImageText?: string;

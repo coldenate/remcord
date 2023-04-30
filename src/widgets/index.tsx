@@ -5,6 +5,7 @@ import {
   ReactRNPlugin,
   Rem,
   RemNamespace,
+  RNPlugin,
   useRunAsync,
   WidgetLocation,
   WindowNamespace,
@@ -25,6 +26,7 @@ let aliveOrNah = { heartbeat: true };
 const pluginVersion = getPluginVersion();
 let parentRemId: string | undefined = undefined;
 let justLeftQueue: boolean = false;
+let cardsRemaining: number | undefined = undefined;
 
 function sendHeartbeat() {
   const myHeaders: HeadersInit = new Headers();
@@ -44,7 +46,7 @@ function sendHeartbeat() {
     .catch((error: Error): void => console.log('error', error));
 }
 
-function checkIdle() {
+function checkIdle(plugin: ReactRNPlugin) {
   let tempTime = allowedIdleTime * 60000;
 
   if (new Date().getTime() - idleElapsedTime.getTime() > tempTime) {
@@ -66,6 +68,8 @@ setTimeout(() => {
 }, 25);
 
 async function onActivate(plugin: ReactRNPlugin) {
+  cardsRemaining = await plugin.queue.getNumRemainingCards();
+
   // send a heartbeat forcefully, and set the activity to idle (future TODO: doing nothing)
 
   await plugin.settings.registerStringSetting({
@@ -80,6 +84,13 @@ async function onActivate(plugin: ReactRNPlugin) {
     title: 'What should we show when editing inside of a document?',
     description: "You can use {remName} to show the name of the rem you're editing.",
     defaultValue: 'Editing in {remName}',
+  });
+
+  await plugin.settings.registerStringSetting({
+    id: 'studying-queue',
+    title: 'Display text when studying your queue?',
+    description: 'You can use {cardsRemaining} for the number of cards left in your queue.',
+    defaultValue: '{cardsRemaining} cards left!',
   });
 
   // TODO: simply viewing and not editing
@@ -152,17 +163,7 @@ async function onActivate(plugin: ReactRNPlugin) {
       // update the idleElapsedTime
       idleElapsedTime = new Date();
       // send a post request to the discord gateway
-      sendPresence({
-        details: 'Flashcard Queue',
-        // state: `num cards left`,
-        state: `Studying`,
-        largeImageKey: 'mocha_logo',
-        largeImageText: `RemCord v${pluginVersion}`,
-        smallImageKey: 'transparent_icon_logo',
-        // smallImageText: 'Maybe the Daily Goal can go here?',
-        startTimestamp: elapsedTime,
-        port: port,
-      });
+      await setAsQueue(plugin);
     }, 25);
   });
 
@@ -171,17 +172,8 @@ async function onActivate(plugin: ReactRNPlugin) {
       // update the idleElapsedTime
       idleElapsedTime = new Date();
       // send a post request to the discord gateway
-      sendPresence({
-        details: 'Flashcard Queue',
-        // state: `num cards left`,
-        state: `Studying`,
-        largeImageKey: 'mocha_logo',
-        largeImageText: `RemCord v${pluginVersion}`,
-        smallImageKey: 'transparent_icon_logo',
-        // smallImageText: 'Maybe the Daily Goal can go here?',
-        startTimestamp: elapsedTime,
-        port: port,
-      });
+      cardsRemaining = await plugin.queue.getNumRemainingCards();
+      await setAsQueue(plugin);
     }, 25);
   });
 
@@ -189,7 +181,7 @@ async function onActivate(plugin: ReactRNPlugin) {
     setTimeout(async () => {
       justLeftQueue = true;
       // send a post request to the discord gateway saying the user is idle
-      setIdle();
+      setIdle(plugin);
     }, 25);
   });
 
@@ -245,7 +237,54 @@ async function onActivate(plugin: ReactRNPlugin) {
     idleCheck = await plugin.settings.getSetting('idle-check');
   }
   sendHeartbeat();
-  setIdle();
+  setIdle(plugin);
+}
+
+async function setAsQueue(plugin: ReactRNPlugin) {
+  let cardsRemaining: number | any = await plugin.queue.getNumRemainingCards();
+  let showQueue: boolean = await plugin.settings.getSetting('show-queue');
+  let showQueueStats: boolean = await plugin.settings.getSetting('show-queue-stats');
+  let studyingQueueText: string = await plugin.settings.getSetting('studying-queue');
+
+  if (!showQueue) return;
+
+  if (studyingQueueText === '') {
+    studyingQueueText = 'Studying Queue';
+  }
+  // replace the variables in the string ({cardsRemaining})
+  studyingQueueText = studyingQueueText.replace('{cardsRemaining}', cardsRemaining.toString());
+  if (showQueueStats) {
+    sendPresence({
+      details: 'Flashcard Queue',
+      state: studyingQueueText,
+      largeImageKey: 'transparent_icon_logo',
+      largeImageText: `RemCord v${pluginVersion}`,
+      smallImageKey: 'transparent_icon_logo',
+      smallImageText: `Current Streak ${await plugin.queue.getCurrentStreak()}`,
+      startTimestamp: elapsedTime,
+      port: port,
+    });
+  } else {
+    sendPresence({
+      details: 'Flashcard Queue',
+      state: studyingQueueText,
+      largeImageKey: 'transparent_icon_logo',
+      largeImageText: `RemCord v${pluginVersion}`,
+      startTimestamp: elapsedTime,
+      port: port,
+    });
+  }
+
+  // sendPresence({
+  //   details: 'Flashcard Queue',
+  //   state: `${cardsRemaining} cards left!`,
+  //   largeImageKey: 'transparent_icon_logo',
+  //   largeImageText: `RemCord v${pluginVersion}`,
+  //   smallImageKey: 'transparent_icon_logo',
+  //   smallImageText: `Current Streak ${await plugin.queue.getCurrentStreak()}`,
+  //   startTimestamp: elapsedTime,
+  //   port: port,
+  // });
 }
 
 async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
@@ -298,10 +337,10 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
 
   sendPresence({
     details: editingDetails,
-    largeImageKey: 'mocha_logo',
+    largeImageKey: 'transparent_icon_logo',
     largeImageText: `RemCord v${pluginVersion}`,
     smallImageKey: 'transparent_icon_logo',
-    // smallImageText: 'Maybe the Daily Goal can go here?',
+    smallImageText: `Study Streak: ${await plugin.queue.getCurrentStreak()}`,
     startTimestamp: elapsedTime,
     port: port,
   });
@@ -310,10 +349,10 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
     sendPresence({
       details: editingDetails,
       state: editingText,
-      largeImageKey: 'mocha_logo',
+      largeImageKey: 'transparent_icon_logo',
       largeImageText: `RemCord v${pluginVersion}`,
       smallImageKey: 'transparent_icon_logo',
-      // smallImageText: 'Maybe the Daily Goal can go here?',
+      smallImageText: `Study Streak: ${await plugin.queue.getCurrentStreak()}`,
       startTimestamp: elapsedTime,
       port: port,
     });
@@ -321,27 +360,26 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
   if (await plugin.settings.getSetting('incognito-mode')) {
     sendPresence({
       state: 'Editing Rems',
-      largeImageKey: 'mocha_logo',
+      largeImageKey: 'transparent_icon_logo',
       largeImageText: `RemCord v${pluginVersion}`,
       smallImageKey: 'transparent_icon_logo',
-      // smallImageText: 'Maybe the Daily Goal can go here?',
+      smallImageText: `Study Streak: ${await plugin.queue.getCurrentStreak()}`,
       startTimestamp: elapsedTime,
       port: port,
     });
   }
 }
 
-function setIdle() {
+function setIdle(reactivePlugin: ReactRNPlugin) {
   if (!idleCheck) {
     return;
   }
   sendPresence({
     details: 'Idle',
     state: 'Not Studying',
-    largeImageKey: 'mocha_logo',
+    largeImageKey: 'transparent_icon_logo',
     largeImageText: `RemCord v${pluginVersion}`,
     smallImageKey: 'transparent_icon_logo',
-    // smallImageText: 'Maybe the Daily Goal can go here?',
     startTimestamp: elapsedTime,
     port: port,
   });
