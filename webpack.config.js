@@ -15,7 +15,7 @@ const isDevelopment = !isProd;
 
 const fastRefresh = isDevelopment ? new ReactRefreshWebpackPlugin() : null;
 
-const SANDBOX_SUFFIX = '-sandbox';
+const SANDBOX_SUFFIX = ''; // 'remove -sandbox to allow for deltion of the sandbox file thingy
 
 const config = {
   mode: isProd ? 'production' : 'development',

@@ -1,5 +1,5 @@
 interface SendPresenceArgs {
-  details?: string;
+  details?: string | undefined | unknown;
   state?: string | null;
   largeImageKey?: string;
   largeImageText?: string;
@@ -12,8 +12,8 @@ interface SendPresenceArgs {
 
 function sendPresence(args: SendPresenceArgs) {
   const {
-    details = '',
-    state = '',
+    details,
+    state,
     largeImageKey = '',
     largeImageText = '',
     smallImageKey = '',
@@ -25,6 +25,15 @@ function sendPresence(args: SendPresenceArgs) {
 
   const myHeaders: HeadersInit = new Headers();
   myHeaders.append('Content-Type', 'application/json');
+
+  // iterate through each key and remove it if it's null
+  Object.keys(args).forEach((key: string): void => {
+    if (args[key] === null) {
+      delete args[key];
+    }
+  });
+
+  console.log(args);
 
   const raw = JSON.stringify({
     destroy,
