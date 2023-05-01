@@ -26,7 +26,6 @@ function sendPresence(args: SendPresenceArgs) {
   const myHeaders: HeadersInit = new Headers();
   myHeaders.append('Content-Type', 'application/json');
 
-  // iterate through each key and remove it if it's null
   Object.keys(args).forEach((key: string): void => {
     if (args[key] === null) {
       delete args[key];
