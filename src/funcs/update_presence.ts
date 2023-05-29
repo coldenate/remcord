@@ -33,7 +33,6 @@ function sendPresence(args: SendPresenceArgs) {
 		}
 	});
 
-	console.log(args);
 
 	const raw = JSON.stringify({
 		destroy,
@@ -55,8 +54,7 @@ function sendPresence(args: SendPresenceArgs) {
 
 	fetch(`http://localhost:${port}/activity`, requestOptions)
 		.then((response: Response): Promise<string> => response.text())
-		.then((result: string): void => console.log(result))
-		.catch((error: Error): void => console.log('error', error));
+		.catch((error: Error): void => console.error('error', error));
 }
 
 export { sendPresence };

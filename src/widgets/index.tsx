@@ -43,7 +43,7 @@ function sendHeartbeat() {
 
 	fetch(`http://localhost:${port}/heartbeat`, requestOptions)
 		.then((response: Response): Promise<string> => response.text())
-		.catch((error: Error): void => console.log('error', error));
+		.catch((error: Error): void => console.error('error', error));
 }
 
 function checkIdle() {
@@ -386,7 +386,7 @@ function setIdle() {
 }
 
 async function onDeactivate(_: ReactRNPlugin) {
-	console.log('deactivating!');
+	console.info('deactivating!');
 }
 
 declareIndexPlugin(onActivate, onDeactivate);

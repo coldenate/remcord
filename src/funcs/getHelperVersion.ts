@@ -16,7 +16,7 @@ async function getVersion(): Promise<string> {
 		version = JSON.parse(result).version;
 		version = `v${version}`;
 	} catch (error: any | unknown) {
-		console.log('error', error);
+		console.warn('error', error);
 	}
 
 	return version; // Output: "v0.0.5"
