@@ -16,7 +16,7 @@ import { getPluginVersion } from '../funcs/getPluginVersion';
 import { getHelperVersion } from '../funcs/getHelperVersion';
 
 const port = 3093;
-const DESIRED_VERSIION_HELPER = 'v0.0.6';
+const DESIRED_VERSIION_HELPER = 'v0.0.7';
 let allowedIdleTime = 5; // in minutes
 let idleElapsedTime = new Date();
 let idleCheck: boolean;
@@ -187,7 +187,7 @@ async function onActivate(plugin: ReactRNPlugin) {
     setTimeout(async () => {
       justLeftQueue = true;
       // send a post request to the discord gateway saying the user is idle
-      setIdle(plugin);
+      setIdle();
     }, 25);
   });
 
