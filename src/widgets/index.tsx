@@ -223,7 +223,6 @@ async function onActivate(plugin: ReactRNPlugin) {
 
   await pullSettings();
 
-  // Show a toast notification to the user.
   if (await plugin.settings.getSetting('notifs')) {
     await plugin.app.toast(
       `RemCord v${pluginVersion} Loaded!\nRemCord Helper ${await getHelperVersion()}`
@@ -259,7 +258,6 @@ async function setAsQueue(plugin: ReactRNPlugin) {
   if (studyingQueueText === '') {
     studyingQueueText = 'Studying Queue';
   }
-  // replace the variables in the string ({cardsRemaining})
   studyingQueueText = studyingQueueText.replace('{cardsRemaining}', cardsRemaining.toString());
   if (showQueueStats) {
     sendPresence({
@@ -282,22 +280,10 @@ async function setAsQueue(plugin: ReactRNPlugin) {
       port: port,
     });
   }
-
-  // sendPresence({
-  //   details: 'Flashcard Queue',
-  //   state: `${cardsRemaining} cards left!`,
-  //   largeImageKey: 'transparent_icon_logo',
-  //   largeImageText: `RemCord v${pluginVersion}`,
-  //   smallImageKey: 'transparent_icon_logo',
-  //   smallImageText: `Current Streak ${await plugin.queue.getCurrentStreak()}`,
-  //   startTimestamp: elapsedTime,
-  //   port: port,
-  // });
 }
 
 async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
   idleElapsedTime = new Date();
-  // send a post request to the discord gateway saying the user is editing!
 
   let currentRemId: string = 'null';
 
@@ -308,10 +294,13 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
     currentRemId = data.remId;
   }
 
-  // const rem = useRunAsync(async () => await plugin.rem.findOne(remId), [remId]);
   const parentRem: Rem | undefined = await plugin.rem.findOne(parentRemId);
-  // if the rem is undefined, set remName to "rem". if rem.text is an array, set remName to rem.text[0]. if rem.text is a string, set remName to rem.text
+
   let parentRemName: string = '{🔄 fetching name}';
+
+  // get the boolean setting 'only-documents'
+  const onlyDocuments: boolean = await plugin.settings.getSetting('only-documents');
+
   if (parentRem) {
     if (Array.isArray(parentRem.text)) {
       parentRemName = parentRem.text[0];
@@ -321,7 +310,6 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
   }
 
   const currentRem: Rem | undefined = await plugin.rem.findOne(currentRemId);
-  // if the rem is undefined, set remName to "rem". if rem.text is an array, set remName to rem.text[0]. if rem.text is a string, set remName to rem.text
   let currentRemName = '{🔄 fetching name}';
   if (currentRem) {
     if (Array.isArray(currentRem.text)) {
@@ -332,13 +320,11 @@ async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
   }
 
   let editingText: string = await plugin.settings.getSetting('editing-text');
-  // editing text will could look like this: "Editing: {remName}" if so, replace {remName} with the rem name
   if (editingText.includes('{remName}')) {
     editingText = editingText.replace('{remName}', currentRemName);
   }
 
   let editingDetails: string = await plugin.settings.getSetting('editing-details');
-  // editing details will could look like this: "Editing: {remName}" if so, replace {remName} with the rem name
   if (editingDetails.includes('{remName}')) {
     editingDetails = editingDetails.replace('{remName}', parentRemName);
   }
