@@ -18,61 +18,61 @@ const fastRefresh = isDevelopment ? new ReactRefreshWebpackPlugin() : null;
 const SANDBOX_SUFFIX = ''; // 'remove -sandbox to allow for deltion of the sandbox file thingy
 
 const config = {
-  mode: isProd ? 'production' : 'development',
-  entry: glob.sync('./src/widgets/**.tsx').reduce(function (obj, el) {
-    obj[path.parse(el).name] = el;
-    obj[path.parse(el).name + SANDBOX_SUFFIX] = el;
-    return obj;
-  }, {}),
-  node: {
-    __dirname: true,
-    __filename: true,
-    global: true,
-  },
+	mode: isProd ? 'production' : 'development',
+	entry: glob.sync('./src/widgets/**.tsx').reduce(function (obj, el) {
+		obj[path.parse(el).name] = el;
+		obj[path.parse(el).name + SANDBOX_SUFFIX] = el;
+		return obj;
+	}, {}),
+	node: {
+		__dirname: true,
+		__filename: true,
+		global: true,
+	},
 
-  output: {
-    path: resolve(__dirname, 'dist'),
-    filename: `[name].js`,
-    publicPath: '',
-  },
-  resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx'],
-  },
-  module: {
-    rules: [
-      { test: /\.worker\.js$/, use: { loader: 'worker-loader' } },
-      {
-        test: /\.(ts|tsx|jsx|js)?$/,
-        loader: 'esbuild-loader',
-        options: {
-          loader: 'tsx',
-          target: 'es2020',
-          minify: false,
-        },
-      },
-      // {
-      //   test: /\.(ts|tsx|jsx|js)?$/,
-      //   use: ['resolve-url-loader'],
-      //   exclude: /node_modules/,
-      // },
-      {
-        test: /\.css$/i,
-        use: [
-          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
-          { loader: 'css-loader', options: { url: false } },
-          'postcss-loader',
-        ],
-      },
-    ],
-  },
-  plugins: [
-    isDevelopment
-      ? undefined
-      : new MiniCssExtractPlugin({
-          filename: '[name].css',
-        }),
-    new HtmlWebpackPlugin({
-      templateContent: `
+	output: {
+		path: resolve(__dirname, 'dist'),
+		filename: `[name].js`,
+		publicPath: '',
+	},
+	resolve: {
+		extensions: ['.js', '.jsx', '.ts', '.tsx'],
+	},
+	module: {
+		rules: [
+			{ test: /\.worker\.js$/, use: { loader: 'worker-loader' } },
+			{
+				test: /\.(ts|tsx|jsx|js)?$/,
+				loader: 'esbuild-loader',
+				options: {
+					loader: 'tsx',
+					target: 'es2020',
+					minify: false,
+				},
+			},
+			// {
+			//   test: /\.(ts|tsx|jsx|js)?$/,
+			//   use: ['resolve-url-loader'],
+			//   exclude: /node_modules/,
+			// },
+			{
+				test: /\.css$/i,
+				use: [
+					isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
+					{ loader: 'css-loader', options: { url: false } },
+					'postcss-loader',
+				],
+			},
+		],
+	},
+	plugins: [
+		isDevelopment
+			? undefined
+			: new MiniCssExtractPlugin({
+					filename: '[name].css',
+			  }),
+		new HtmlWebpackPlugin({
+			templateContent: `
       <body></body>
       <script type="text/javascript">
       const urlSearchParams = new URLSearchParams(window.location.search);
@@ -86,46 +86,46 @@ const config = {
       document.body.appendChild(s);
       </script>
     `,
-      filename: 'index.html',
-      inject: false,
-    }),
-    new ProvidePlugin({
-      React: 'react',
-      reactDOM: 'react-dom',
-    }),
-    new BannerPlugin({
-      banner: (file) => {
-        return !file.chunk.name.includes(SANDBOX_SUFFIX) ? 'const IMPORT_META=import.meta;' : '';
-      },
-      raw: true,
-    }),
-    new CopyPlugin({
-      patterns: [
-        { from: 'public', to: '' },
-        { from: 'README.md', to: '' },
-      ],
-    }),
-    fastRefresh,
-  ].filter(Boolean),
+			filename: 'index.html',
+			inject: false,
+		}),
+		new ProvidePlugin({
+			React: 'react',
+			reactDOM: 'react-dom',
+		}),
+		new BannerPlugin({
+			banner: (file) => {
+				return !file.chunk.name.includes(SANDBOX_SUFFIX) ? 'const IMPORT_META=import.meta;' : '';
+			},
+			raw: true,
+		}),
+		new CopyPlugin({
+			patterns: [
+				{ from: 'public', to: '' },
+				{ from: 'README.md', to: '' },
+			],
+		}),
+		fastRefresh,
+	].filter(Boolean),
 };
 
 if (isProd) {
-  config.optimization = {
-    minimize: isProd,
-    minimizer: [new ESBuildMinifyPlugin()],
-  };
+	config.optimization = {
+		minimize: isProd,
+		minimizer: [new ESBuildMinifyPlugin()],
+	};
 } else {
-  // for more information, see https://webpack.js.org/configuration/dev-server
-  config.devServer = {
-    port: 8080,
-    open: true,
-    hot: true,
-    compress: true,
-    watchFiles: ['src/*'],
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-  };
+	// for more information, see https://webpack.js.org/configuration/dev-server
+	config.devServer = {
+		port: 8080,
+		open: true,
+		hot: true,
+		compress: true,
+		watchFiles: ['src/*'],
+		headers: {
+			'Access-Control-Allow-Origin': '*',
+		},
+	};
 }
 
 module.exports = config;
