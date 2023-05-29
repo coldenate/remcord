@@ -149,6 +149,12 @@ async function onActivate(plugin: ReactRNPlugin) {
 		defaultValue: 5,
 	});
 
+	await plugin.settings.registerBooleanSetting({
+		id: 'only-documents',
+		title: 'Should RemCord only show when you are editing/viewing root documents?',
+		defaultValue: false,
+	});
+
 	// // A command that inserts text into the editor if focused.
 	// await plugin.app.registerCommand({
 	//   id: 'discord-connect',
