@@ -15,7 +15,7 @@ const isDevelopment = !isProd;
 
 const fastRefresh = isDevelopment ? new ReactRefreshWebpackPlugin() : null;
 
-const SANDBOX_SUFFIX = ''; // 'remove -sandbox to allow for deltion of the sandbox file thingy
+const SANDBOX_SUFFIX = '-sandbox';
 
 const config = {
 	mode: isProd ? 'production' : 'development',
@@ -24,11 +24,6 @@ const config = {
 		obj[path.parse(el).name + SANDBOX_SUFFIX] = el;
 		return obj;
 	}, {}),
-	node: {
-		__dirname: true,
-		__filename: true,
-		global: true,
-	},
 
 	output: {
 		path: resolve(__dirname, 'dist'),
@@ -40,7 +35,6 @@ const config = {
 	},
 	module: {
 		rules: [
-			{ test: /\.worker\.js$/, use: { loader: 'worker-loader' } },
 			{
 				test: /\.(ts|tsx|jsx|js)?$/,
 				loader: 'esbuild-loader',
@@ -50,15 +44,10 @@ const config = {
 					minify: false,
 				},
 			},
-			// {
-			//   test: /\.(ts|tsx|jsx|js)?$/,
-			//   use: ['resolve-url-loader'],
-			//   exclude: /node_modules/,
-			// },
 			{
 				test: /\.css$/i,
 				use: [
-					isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
+					MiniCssExtractPlugin.loader,
 					{ loader: 'css-loader', options: { url: false } },
 					'postcss-loader',
 				],
@@ -66,11 +55,9 @@ const config = {
 		],
 	},
 	plugins: [
-		isDevelopment
-			? undefined
-			: new MiniCssExtractPlugin({
-					filename: '[name].css',
-			  }),
+		new MiniCssExtractPlugin({
+			filename: 'App.css',
+		}),
 		new HtmlWebpackPlugin({
 			templateContent: `
       <body></body>
@@ -100,10 +87,7 @@ const config = {
 			raw: true,
 		}),
 		new CopyPlugin({
-			patterns: [
-				{ from: 'public', to: '' },
-				{ from: 'README.md', to: '' },
-			],
+			patterns: [{ from: 'public', to: '' }],
 		}),
 		fastRefresh,
 	].filter(Boolean),
