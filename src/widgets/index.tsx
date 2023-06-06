@@ -7,44 +7,24 @@ import {
 	RemNamespace,
 	RNPlugin,
 	useRunAsync,
+	useSyncedStorageState,
 	WidgetLocation,
 	WindowNamespace,
 } from '@remnote/plugin-sdk';
 import '../App.css';
 import { sendPresence } from '../funcs/update_presence';
 import { getPluginVersion } from '../funcs/getPluginVersion';
-import { getHelperVersion } from '../funcs/getHelperVersion';
 
 const port = 3093;
-const DESIRED_VERSIION_HELPER = 'v0.0.7';
 let allowedIdleTime = 5; // in minutes
 let idleElapsedTime = new Date();
 let idleCheck: boolean;
 let elapsedTime: Date = new Date();
 let elapsedGlobalRemChangeTime: Date | null = null;
-let aliveOrNah = { heartbeat: true };
 const pluginVersion = getPluginVersion();
 let parentRemId: string | undefined = undefined;
 let justLeftQueue: boolean = false;
 let cardsRemaining: number | undefined = undefined;
-
-function sendHeartbeat() {
-	const myHeaders: HeadersInit = new Headers();
-	myHeaders.append('Content-Type', 'application/json');
-
-	const raw = JSON.stringify(aliveOrNah);
-
-	const requestOptions: RequestInit = {
-		method: 'POST',
-		headers: myHeaders,
-		body: raw,
-		redirect: 'follow',
-	};
-
-	fetch(`http://localhost:${port}/heartbeat`, requestOptions)
-		.then((response: Response): Promise<string> => response.text())
-		.catch((error: Error): void => console.error('error', error));
-}
 
 function checkIdle() {
 	let tempTime = allowedIdleTime * 60000;
@@ -57,12 +37,6 @@ function checkIdle() {
 // the below timeout-interval is a hacky trick to make a file run simliarly to a worker thread
 setTimeout(() => {
 	setInterval(() => {
-		sendHeartbeat();
-	}, 5000);
-}, 25);
-
-setTimeout(() => {
-	setInterval(() => {
 		checkIdle();
 	}, 1000);
 }, 25);
@@ -70,53 +44,64 @@ setTimeout(() => {
 async function onActivate(plugin: ReactRNPlugin) {
 	cardsRemaining = await plugin.queue.getNumRemainingCards();
 
-	// send a heartbeat forcefully, and set the activity to idle (future TODO: doing nothing)
+	// just testing
+	// const [discordUserAuthToken, setDiscordUserAuthToken] = useSyncedStorageState<string>(
+	// 	'discordUserAuthToken',
+	// 	'0'
+	// );
+
+	// console.log('Discord User Auth Token: ' + discordUserAuthToken);
+
+	// setDiscordUserAuthToken('ppeeepeeeseeeee');
+
+	// console.log('Discord User Auth Token: ' + discordUserAuthToken);
+
+	// widgets
+
+	await plugin.app.registerWidget('discordAuth', WidgetLocation.RightSidebar, {
+		dimensions: { height: '100%', width: '100%' },
+		widgetTabIcon: 'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-app.png',
+	});
+
+	// settings
 
 	await plugin.settings.registerStringSetting({
 		id: 'editing-text',
-		title: 'What should we show when you are editing rems?',
+		title: 'Editing Display Text',
 		description: "You can use {remName} to show the name of the rem you're editing.",
 		defaultValue: 'Editing {remName}',
 	});
 
 	await plugin.settings.registerStringSetting({
 		id: 'editing-details',
-		title: 'What should we show when editing inside of a document?',
+		title: 'Editing Display Details',
 		description: "You can use {remName} to show the name of the rem you're editing.",
 		defaultValue: 'Editing in {remName}',
 	});
 
 	await plugin.settings.registerStringSetting({
 		id: 'studying-queue',
-		title: 'Display text when studying your queue?',
+		title: 'Studying Queue Display Text',
 		description: 'You can use {cardsRemaining} for the number of cards left in your queue.',
 		defaultValue: '{cardsRemaining} cards left!',
 	});
 
-	// TODO: simply viewing and not editing
-	// await plugin.settings.registerStringSetting({
-	//   id: 'viewing-text',
-	//   title: 'What should we show when viewing a document?',
-	//   description: "You can use {remName} to show the name of the rem you're editing.",
-	//   defaultValue: 'Viewing {remName}',
-	// });
-
 	// askuser if they want to show when they are studying their queue
 	await plugin.settings.registerBooleanSetting({
 		id: 'show-queue',
-		title: 'Should RemCord show when you are studying your queue?',
+		title: 'Display when using Queue',
 		defaultValue: true,
 	});
 	// ask user if they want to show their queue statistics
 	await plugin.settings.registerBooleanSetting({
 		id: 'show-queue-stats',
-		title: 'Should RemCord show your queue statistics?',
+		title: 'Display Queue Statistics',
 		defaultValue: true,
 	});
 
 	await plugin.settings.registerBooleanSetting({
 		id: 'incognito-mode',
-		title: 'Disable display of any details about what you are editing/viewing?',
+		title: 'Disable Display of Details',
 		description:
 			'If you prefer the privacy, turn this on so Discord does not show what you are editing.',
 		defaultValue: false,
@@ -124,7 +109,7 @@ async function onActivate(plugin: ReactRNPlugin) {
 
 	await plugin.settings.registerBooleanSetting({
 		id: 'show-current-rem-name',
-		title: 'Should RemCord show the name of the rem you are editing?',
+		title: 'Show Current Rem Name',
 		description:
 			"If you prefer the privacy, turn this off so Discord doesn't show exactly what you are typing. Only the Parent Rem will be shown.",
 		defaultValue: false,
@@ -132,42 +117,29 @@ async function onActivate(plugin: ReactRNPlugin) {
 
 	await plugin.settings.registerBooleanSetting({
 		id: 'notifs',
-		title: 'Should RemCord show notifications?',
+		title: 'Plugin Notifications',
 		defaultValue: true,
 	});
 
 	await plugin.settings.registerBooleanSetting({
 		id: 'idle-check',
-		title: 'Should RemCord check for idle?',
+		title: 'Enable Idle',
 		defaultValue: true,
 	});
 
 	await plugin.settings.registerNumberSetting({
 		id: 'idle-time',
-		title: 'How long should we wait before considering you idle?',
+		title: 'Maximum Idle Time',
 		description: 'In minutes. Default is 5 minutes.',
 		defaultValue: 5,
 	});
 
 	await plugin.settings.registerBooleanSetting({
 		id: 'only-documents',
-		title: 'Should RemCord only show when you are editing/viewing root documents?',
+		title: 'Restrict Display to Documents at Root',
+		description:
+			"This means whenever a rem you are editing has a root parent that is a document, it will show. Otherwise, RemCord won't display it at all.",
 		defaultValue: false,
-	});
-
-	// // A command that inserts text into the editor if focused.
-	// await plugin.app.registerCommand({
-	//   id: 'discord-connect',
-	//   name: 'Connect to Discord Gateway',
-	//   action: async () => {},
-	// });
-
-	await plugin.app.registerCommand({
-		id: 'get-version',
-		name: 'Get Plugin Version',
-		action: async () => {
-			await plugin.app.toast(`RemCord v${pluginVersion}`);
-		},
 	});
 	// Defining listeners
 	plugin.event.addListener(AppEvents.QueueEnter, undefined, async (data) => {
@@ -229,27 +201,10 @@ async function onActivate(plugin: ReactRNPlugin) {
 
 	await pullSettings();
 
-	if (await plugin.settings.getSetting('notifs')) {
-		await plugin.app.toast(
-			`RemCord v${pluginVersion} Loaded!\nRemCord Helper ${await getHelperVersion()}`
-		);
-
-		if (Math.floor(Math.random() * 7) === 0) {
-			await plugin.app.toast('Fun Fact: You can disable these notifications in settings!');
-		}
-
-		if ((await getHelperVersion()) !== DESIRED_VERSIION_HELPER) {
-			await plugin.app.toast(
-				`RemCord Helper is out of date! Please update to ${DESIRED_VERSIION_HELPER}\nVisit the Github. Delete the old helper. \nDownload the New One!`
-			);
-		}
-	}
-
 	async function pullSettings() {
 		allowedIdleTime = await plugin.settings.getSetting('idle-time');
 		idleCheck = await plugin.settings.getSetting('idle-check');
 	}
-	sendHeartbeat();
 	setIdle();
 }
 
@@ -390,5 +345,3 @@ async function onDeactivate(_: ReactRNPlugin) {
 }
 
 declareIndexPlugin(onActivate, onDeactivate);
-
-export { sendHeartbeat };

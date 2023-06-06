@@ -6,7 +6,6 @@ interface SendPresenceArgs {
 	smallImageKey?: string;
 	smallImageText?: string;
 	startTimestamp?: number | Date;
-	port?: number;
 	destroy?: boolean;
 }
 
@@ -19,7 +18,6 @@ function sendPresence(args: SendPresenceArgs) {
 		smallImageKey = '',
 		smallImageText = '',
 		startTimestamp: date = 0,
-		port = 3093,
 		destroy = false,
 	} = args;
 
@@ -27,7 +25,7 @@ function sendPresence(args: SendPresenceArgs) {
 	myHeaders.append('Content-Type', 'application/json');
 
 	// iterate through each key and remove it if it's null
-	Object.keys(args).forEach((key: string): void => {
+	Object.keys(args).forEach((key: keyof SendPresenceArgs): void => {
 		if (args[key] === null) {
 			delete args[key];
 		}
@@ -52,7 +50,7 @@ function sendPresence(args: SendPresenceArgs) {
 		redirect: 'follow',
 	};
 
-	fetch(`http://localhost:${port}/activity`, requestOptions)
+	fetch(``, requestOptions)
 		.then((response: Response): Promise<string> => response.text())
 		.catch((error: Error): void => console.error('error', error));
 }
