@@ -10,6 +10,9 @@
 	},
 	"dependencies": {
 		"@remnote/plugin-sdk": "^0.0.25",
+		"@types/js-yaml": "^4.0.5",
+		"axios": "^1.4.0",
+		"js-yaml": "^4.1.0",
 		"node-loader": "^2.0.0",
 		"querystring": "^0.2.1",
 		"react": "^17.0.2",
