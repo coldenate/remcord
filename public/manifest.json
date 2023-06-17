@@ -1,21 +1,21 @@
 {
-  "author": "Nathan Solis",
-  "name": "RemCord",
-  "description": "A Discord RPC Connection to RemNote. Currently only works on Desktop!",
-  "enableOnMobile": false,
-  "id": "remcord",
-  "repoUrl": "https://github.com/coldenate/remcord",
-  "manifestVersion": 1,
-  "version": {
-    "major": 0,
-    "minor": 1,
-    "patch": 1
-  },
-  "requestNative": false,
-  "requiredScopes": [
-    {
-      "type": "All",
-      "level": "ReadCreateModify"
-    }
-  ]
+	"author": "coldenate",
+	"name": "RemCord | RemNote Discord RPC",
+	"description": "A Discord RPC Connection to RemNote. Works everywhere!",
+	"enableOnMobile": false,
+	"id": "remcord",
+	"repoUrl": "https://github.com/coldenate/remcord",
+	"manifestVersion": 1,
+	"version": {
+		"major": 1,
+		"minor": 0,
+		"patch": 0
+	},
+	"requestNative": false,
+	"requiredScopes": [
+		{
+			"type": "All",
+			"level": "ReadCreateModify"
+		}
+	]
 }

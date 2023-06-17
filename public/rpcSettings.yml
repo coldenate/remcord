@@ -1,0 +1,53 @@
+app-name:
+  description: "The display name of the app"
+  default: "RemNote"
+
+queue-details:
+  description: "The details to display when the user is studying their queue"
+  default: "{cardsRemaining} cards remaining!"
+
+queue-state:
+  description: "The state to display when the user is studying their queue"
+  default: "Studying in Flashcard Queue"
+
+queue-large-text:
+  description: "Text for the large image when the user is studying their queue"
+  default: "Study Streak: {currentStreak}"
+
+queue-small-text:
+  description: "Text for the small image when the user is studying their queue"
+  default: "RemCord v{pluginVersion}"
+
+editing-details:
+  description: "The details to display when the user is editing a rem"
+  default: "Editing a Rem"
+
+editing-state:
+  description: "The state to display when the user is editing a rem"
+  default: "RemNote Editor"
+
+editing-large-text:
+  description: "Text for the large image when the user is editing a rem"
+  default: "RemCord v{pluginVersion}"
+
+editing-small-text:
+  description: "Text for the small image when the user is editing a rem"
+  default: "{elapsedTime}"
+
+idle-details:
+  description: "The details to display when the user is idle"
+  default: "Currently Idling"
+
+idle-state:
+  description: "The state to display when the user is idle"
+  default: "Idle"
+
+idle-large-text:
+  description: "Text for the large image when the user is idle"
+  default: "RemCord v{pluginVersion}"
+
+idle-small-text:
+  description: "Text for the small image when the user is idle"
+  default: "{elapsedTime}"
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/coldenate/remcord/main/public/rpcSettings.schema.json

@@ -1,0 +1,177 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"app-name": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"queue-details": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"queue-state": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"queue-large-text": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"queue-small-text": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"editing-details": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"editing-state": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"editing-large-text": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"editing-small-text": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"idle-details": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"idle-state": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"idle-large-text": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		},
+		"idle-small-text": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"type": "string"
+				},
+				"default": {
+					"type": "string"
+				}
+			},
+			"required": ["description", "default"]
+		}
+	},
+	"required": [
+		"app-name",
+		"queue-details",
+		"queue-state",
+		"queue-large-text",
+		"queue-small-text",
+		"editing-details",
+		"editing-state",
+		"editing-large-text",
+		"editing-small-text",
+		"idle-details",
+		"idle-state",
+		"idle-large-text",
+		"idle-small-text"
+	]
+}
