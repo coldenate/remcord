@@ -86,7 +86,7 @@ export async function setUserToken(
  * @param plugin - The plugin instance.
  * @returns The user token that was retrieved.
  */
-async function getUserToken(plugin: ReactRNPlugin): Promise<UserToken | undefined> {
+export async function getUserToken(plugin: ReactRNPlugin): Promise<UserToken | undefined> {
 	return await plugin.storage.getSynced('userToken');
 }
 
@@ -124,7 +124,15 @@ import { differenceInMinutes } from 'date-fns';
  * @param clear - Whether to clear the session token and delete the session on the remote server before creating a new one. Default is false.
  * @returns The activity that was set.
  */
-export async function setActivity(plugin: ReactRNPlugin, activity?: Activity, clear?: boolean) {
+export async function setActivity(
+	plugin: ReactRNPlugin,
+	clearToRun: boolean,
+	activity?: Activity,
+	clear?: boolean
+) {
+	if (!clearToRun) {
+		return;
+	}
 	const currentActivity: Activity | undefined = await plugin.storage.getSynced('activity');
 	const currentSessionToken = await getSessionToken(plugin);
 	if (activity === undefined) {
@@ -143,12 +151,10 @@ export async function setActivity(plugin: ReactRNPlugin, activity?: Activity, cl
 	}
 
 	if (clear) {
-		console.log('Clearing Current Session');
-		await deleteSessionOnRemote(plugin);
+		console.info('Clearing Current Session');
+		await deleteSessionOnRemote(plugin, clearToRun);
 		await clearSession(plugin);
 	}
-
-	console.log(currentSessionToken);
 
 	if (
 		typeof currentSessionToken === 'string' &&
@@ -176,7 +182,13 @@ export async function setActivity(plugin: ReactRNPlugin, activity?: Activity, cl
  * @returns The response data from the server.
  * @throws An error if the user token is undefined.
  */
-export async function deleteSessionOnRemote(plugin: ReactRNPlugin): Promise<any> {
+export async function deleteSessionOnRemote(
+	plugin: ReactRNPlugin,
+	clearToRun: boolean
+): Promise<any> {
+	if (!clearToRun) {
+		return;
+	}
 	const sessionToken = await getSessionToken(plugin);
 	const userToken = await getUserToken(plugin);
 	if (userToken == undefined) {
@@ -214,10 +226,7 @@ async function createSessionOnRemote(plugin: ReactRNPlugin, activity: Activity) 
 	}
 	const response: AxiosResponse = await axios.post(`${backendURL}/create`, interaction);
 	const sessionToken: string = response.data;
-	console.log(response);
 	if (sessionToken == undefined) {
-		console.log(response);
-		console.log(response.data);
 		throw new Error('Session token is undefined');
 	}
 	await setSessionToken(plugin, sessionToken);

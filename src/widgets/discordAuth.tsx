@@ -12,6 +12,10 @@ function DiscordAuth() {
 		'userToken',
 		undefined
 	);
+	const [lastTokenRefreshTime, setLastTokenRefreshTime] = useSyncedStorageState<Date | undefined>(
+		'lastTokenRefreshTime',
+		undefined
+	);
 
 	const handleSubmit = () => {
 		// handle code submission
@@ -19,13 +23,12 @@ function DiscordAuth() {
 		// this will be a base 64 encoded string
 		// what we need to do is decode it, and then parse it as json. Then we will have the access and refresh tokens
 
-		console.log(userJson);
-
 		const newUserToken: UserToken = {
 			...userJson,
 		};
 
 		setUserToken(newUserToken);
+		setLastTokenRefreshTime(new Date());
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {

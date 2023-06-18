@@ -8,7 +8,12 @@ import {
 import '../App.css';
 import { getPluginVersion } from '../funcs/getPluginVersion';
 import { setAsEditing, setAsQueue, setIdle } from '../funcs/presenceSet';
-import { deleteSessionOnRemote, setActivity } from '../funcs/sessions';
+import {
+	deleteSessionOnRemote,
+	getUserToken,
+	refreshUserToken,
+	setActivity,
+} from '../funcs/sessions';
 
 let elapsedGlobalRemChangeTime: Date | null = null;
 let justLeftQueue: boolean = false;
@@ -36,22 +41,33 @@ async function checkIdle() {
 
 	if (new Date().getTime() - idleElapsedTime.getTime() > tempTime) {
 		const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');
-		setIdle(plugin, idleCheck);
+		setIdle(plugin, idleCheck, clearToRun);
 	}
 }
 
-// the below timeout-interval is a hacky trick to make a file run simliarly to a worker thread
-// setTimeout(() => {
-// 	setInterval(() => {
-// 		checkIdle();
-// 	}, 1000);
-// }, 25);
+// hacky trick for func run scheduled as a job. TODO: find a better way to do this
+setTimeout(() => {
+	setInterval(() => {
+		checkIdle();
+	}, 1000);
+}, 25);
 
 async function onActivate(plugin: ReactRNPlugin) {
 	PLUGIN_PASSTHROUGH_VAR = plugin;
 
 	// jobs
-	// we will need to refresh the token every 5 days. TODO: actually do this
+
+	const lastRefreshTime = new Date(
+		(await plugin.storage.getSynced<Date>('lastTokenRefreshTime')) || Date.now()
+	);
+	if (lastRefreshTime === undefined || lastRefreshTime === null) {
+		await plugin.storage.setSynced('lastTokenRefreshTime', new Date().getTime()); // we don't need to get the token on the initialization because the user would have to have logged in already
+		clearToRun = true;
+	} else if (new Date().getTime() - lastRefreshTime.getTime() > 432000000) {
+		// 5 days
+		refreshUserToken(plugin);
+		clearToRun = true;
+	}
 
 	// widgets
 
@@ -221,11 +237,32 @@ async function onActivate(plugin: ReactRNPlugin) {
 
 	await plugin.app.registerCommand({
 		id: 'force-delete-session',
-		name: 'Force Delete Session',
+		name: '{Debug} Force Delete Session',
 		description:
-			"Force delete the session on the remote server.Hey maybe don't do this unless you know what you are doing.",
+			"Force delete the session on the remote server. Please be careful when using this. Do not use this unless you know what you're doing.",
 		action: async () => {
-			await deleteSessionOnRemote(plugin);
+			await deleteSessionOnRemote(plugin, clearToRun);
+		},
+	});
+
+	await plugin.app.registerCommand({
+		id: 'force-refresh-token',
+		name: '{Debug} Force Refresh Token',
+		description:
+			"Force refresh the token on the remote server. Please be careful when using this. Do not use this unless you know what you're doing.",
+		action: async () => {
+			await refreshUserToken(plugin);
+		},
+	});
+
+	await plugin.app.registerCommand({
+		id: 'log-token',
+		name: '{Debug} Log Token',
+		description:
+			"Log the token to the console. Please be careful when using this. Do not use this unless you know what you're doing.",
+		action: async () => {
+			const tokenToLog = await getUserToken(plugin);
+			console.log('Hey there! You logged this TOKEN from that RemNote command:', tokenToLog);
 		},
 	});
 
@@ -314,12 +351,11 @@ async function onActivate(plugin: ReactRNPlugin) {
 	});
 
 	const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');
-	console.log('hi');
-	setIdle(plugin, idleCheck);
+	setIdle(plugin, idleCheck, clearToRun);
 }
 
 async function onDeactivate(plugin: ReactRNPlugin) {
-	await setActivity(plugin, undefined, true);
+	await setActivity(plugin, clearToRun, undefined, true);
 }
 
 declareIndexPlugin(onActivate, onDeactivate);
