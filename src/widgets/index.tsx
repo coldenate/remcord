@@ -14,6 +14,7 @@ import {
 	refreshUserToken,
 	setActivity,
 } from '../funcs/sessions';
+import { getPossibleRPCVariables } from '../funcs/getRPCSetting';
 
 let elapsedGlobalRemChangeTime: Date | null = null;
 let justLeftQueue: boolean = false;
@@ -76,7 +77,9 @@ async function onActivate(plugin: ReactRNPlugin) {
 		widgetTabIcon: 'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png',
 	});
 
-	const VARIABLE_NOTICE_STRING: string = 'Variables are in curly brackets. Possible variables are:';
+	const VARIABLE_NOTICE_STRING: string =
+		'Variables are in curly brackets. Possible variables are: ' +
+		(await getPossibleRPCVariables(plugin));
 
 	await plugin.settings.registerStringSetting({
 		id: 'app-name',
