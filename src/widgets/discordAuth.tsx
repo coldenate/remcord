@@ -1,13 +1,17 @@
 import { renderWidget, useSyncedStorageState } from '@remnote/plugin-sdk';
 import { useState } from 'react';
 import { Buffer } from 'buffer';
+import { UserToken } from '../utils/interfaces';
+import { setUserToken } from '../funcs/sessions';
 
 const discurdUrl =
-	'https://discord.com/api/oauth2/authorize?client_id=1083778386708676728&redirect_uri=http%3A%2F%2Flocalhost%3A6895%2Fcallback&response_type=code&scope=identify%20activities.write%20activities.read';
-
+	'https://discord.com/api/oauth2/authorize?client_id=1083778386708676728&redirect_uri=https%3A%2F%2Fcoldenate.github.io%2Fdishandle&response_type=code&scope=identify%20activities.read%20activities.write';
 function DiscordAuth() {
 	const [code, setCode] = useState('');
-	const [value, setValue] = useSyncedStorageState<string>('discordAuthJson', '');
+	const [userToken, setUserToken] = useSyncedStorageState<UserToken | undefined>(
+		'userToken',
+		undefined
+	);
 
 	const handleSubmit = () => {
 		// handle code submission
@@ -15,7 +19,13 @@ function DiscordAuth() {
 		// this will be a base 64 encoded string
 		// what we need to do is decode it, and then parse it as json. Then we will have the access and refresh tokens
 
-		setValue(JSON.stringify(userJson));
+		console.log(userJson);
+
+		const newUserToken: UserToken = {
+			...userJson,
+		};
+
+		setUserToken(newUserToken);
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -95,6 +105,6 @@ function DiscordAuth() {
 			</div>
 		</>
 	);
-}
+};
 
 renderWidget(DiscordAuth);

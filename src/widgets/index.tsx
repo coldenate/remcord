@@ -3,88 +3,163 @@ import {
 	declareIndexPlugin,
 	PageType,
 	ReactRNPlugin,
-	Rem,
-	RemNamespace,
-	RNPlugin,
-	useRunAsync,
-	useSyncedStorageState,
 	WidgetLocation,
-	WindowNamespace,
 } from '@remnote/plugin-sdk';
 import '../App.css';
-import { sendPresence } from '../funcs/update_presence';
 import { getPluginVersion } from '../funcs/getPluginVersion';
+import { setAsEditing, setAsQueue, setIdle } from '../funcs/presenceSet';
+import { deleteSessionOnRemote, setActivity } from '../funcs/sessions';
 
-const port = 3093;
-let allowedIdleTime = 5; // in minutes
-let idleElapsedTime = new Date();
-let idleCheck: boolean;
-let elapsedTime: Date = new Date();
 let elapsedGlobalRemChangeTime: Date | null = null;
-const pluginVersion = getPluginVersion();
-let parentRemId: string | undefined = undefined;
 let justLeftQueue: boolean = false;
-let cardsRemaining: number | undefined = undefined;
+let PLUGIN_PASSTHROUGH_VAR: ReactRNPlugin;
+export let idleElapsedTime = new Date();
+export let elapsedTime: Date = new Date();
+export const pluginVersion = getPluginVersion();
+export let parentRemId: string | undefined = undefined;
+export let clearToRun: boolean = false;
+export const backendURL = 'http://0.0.0.0:5032';
 
-function checkIdle() {
-	let tempTime = allowedIdleTime * 60000;
+export const LARGE_IMAGE_QUEUE_URL: string =
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png'; // TODO: Create actual logo
+export const LARGE_IMAGE_IDLE_URL: string =
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png'; // TODO: Create actual logo
+export const LARGE_IMAGE_EDITING_URL: string =
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.pngpng'; // TODO: Create actual logo
+export const SMALL_IMAGE_URL: string =
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png';
+
+async function checkIdle() {
+	const plugin = PLUGIN_PASSTHROUGH_VAR;
+	const allowedIdleTime = (await plugin.settings.getSetting<number>('idle-time')) ?? 5;
+	const tempTime = allowedIdleTime * 60000;
 
 	if (new Date().getTime() - idleElapsedTime.getTime() > tempTime) {
-		setIdle();
+		const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');
+		setIdle(plugin, idleCheck);
 	}
 }
 
 // the below timeout-interval is a hacky trick to make a file run simliarly to a worker thread
-setTimeout(() => {
-	setInterval(() => {
-		checkIdle();
-	}, 1000);
-}, 25);
+// setTimeout(() => {
+// 	setInterval(() => {
+// 		checkIdle();
+// 	}, 1000);
+// }, 25);
 
 async function onActivate(plugin: ReactRNPlugin) {
-	cardsRemaining = await plugin.queue.getNumRemainingCards();
+	PLUGIN_PASSTHROUGH_VAR = plugin;
 
-	// just testing
-	// const [discordUserAuthToken, setDiscordUserAuthToken] = useSyncedStorageState<string>(
-	// 	'discordUserAuthToken',
-	// 	'0'
-	// );
-
-	// console.log('Discord User Auth Token: ' + discordUserAuthToken);
-
-	// setDiscordUserAuthToken('ppeeepeeeseeeee');
-
-	// console.log('Discord User Auth Token: ' + discordUserAuthToken);
+	// jobs
+	// we will need to refresh the token every 5 days. TODO: actually do this
 
 	// widgets
 
 	await plugin.app.registerWidget('discordAuth', WidgetLocation.RightSidebar, {
-		dimensions: { height: '100%', width: '100%' },
-		widgetTabIcon: 'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-app.png',
+		dimensions: { height: '100%' as 'auto', width: '100%' },
+		widgetTabIcon: 'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png',
 	});
 
-	// settings
+	const VARIABLE_NOTICE_STRING: string = 'Variables are in curly brackets. Possible variables are:';
 
 	await plugin.settings.registerStringSetting({
-		id: 'editing-text',
-		title: 'Editing Display Text',
-		description: "You can use {remName} to show the name of the rem you're editing.",
-		defaultValue: 'Editing {remName}',
+		id: 'app-name',
+		title: 'App Name',
+		description: 'The display name of the app. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'RemNote',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'queue-details',
+		title: 'Queue Details',
+		description:
+			'The details to display when the user is studying their queue. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: '{cardsRemaining} cards remaining!',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'queue-state',
+		title: 'Queue State',
+		description:
+			'The state to display when the user is studying their queue. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'Flashcard Queue',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'queue-large-text',
+		title: 'Queue Large Text',
+		description:
+			'Text for the large image when the user is studying their queue. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'Study Streak: {currentStreak}',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'queue-small-text',
+		title: 'Queue Small Text',
+		description:
+			'Text for the small image when the user is studying their queue. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'RemCord v{pluginVersion}',
 	});
 
 	await plugin.settings.registerStringSetting({
 		id: 'editing-details',
-		title: 'Editing Display Details',
-		description: "You can use {remName} to show the name of the rem you're editing.",
-		defaultValue: 'Editing in {remName}',
+		title: 'Editing Details',
+		description: 'The details to display when the user is editing a rem. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'Editing a Rem',
 	});
 
 	await plugin.settings.registerStringSetting({
-		id: 'studying-queue',
-		title: 'Studying Queue Display Text',
-		description: 'You can use {cardsRemaining} for the number of cards left in your queue.',
-		defaultValue: '{cardsRemaining} cards left!',
+		id: 'editing-state',
+		title: 'Editing State',
+		description: 'The state to display when the user is editing a rem. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'RemNote Editor',
 	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'editing-large-text',
+		title: 'Editing Large Text',
+		description:
+			'Text for the large image when the user is editing a rem. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'RemCord v{pluginVersion}',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'editing-small-text',
+		title: 'Editing Small Text',
+		description:
+			'Text for the small image when the user is editing a rem. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: '{elapsedTime}',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'idle-details',
+		title: 'Idle Details',
+		description: 'The details to display when the user is idle. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'Currently Idling',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'idle-state',
+		title: 'Idle State',
+		description: 'The state to display when the user is idle. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'Idle',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'idle-large-text',
+		title: 'Idle Large Text',
+		description: 'Text for the large image when the user is idle. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: 'RemCord v{pluginVersion}',
+	});
+
+	await plugin.settings.registerStringSetting({
+		id: 'idle-small-text',
+		title: 'Idle Small Text',
+		description: 'Text for the small image when the user is idle. ' + VARIABLE_NOTICE_STRING,
+		defaultValue: '{elapsedTime}',
+	});
+
+	// settings
 
 	// askuser if they want to show when they are studying their queue
 	await plugin.settings.registerBooleanSetting({
@@ -141,207 +216,110 @@ async function onActivate(plugin: ReactRNPlugin) {
 			"This means whenever a rem you are editing has a root parent that is a document, it will show. Otherwise, RemCord won't display it at all.",
 		defaultValue: false,
 	});
-	// Defining listeners
-	plugin.event.addListener(AppEvents.QueueEnter, undefined, async (data) => {
-		setTimeout(async () => {
-			// update the idleElapsedTime
-			idleElapsedTime = new Date();
-			// send a post request to the discord gateway
+
+	// commands
+
+	await plugin.app.registerCommand({
+		id: 'force-delete-session',
+		name: 'Force Delete Session',
+		description:
+			"Force delete the session on the remote server.Hey maybe don't do this unless you know what you are doing.",
+		action: async () => {
+			await deleteSessionOnRemote(plugin);
+		},
+	});
+
+	/*
+
+	<----- Uncomment these Debug commands to use them ----->
+
+
+	await plugin.app.registerCommand({
+		id: 'debug-set-queue',
+		name: 'Debug Set RPC as Queue',
+		description: 'Debugging command to set the RPC as queue',
+		action: async () => {
 			await setAsQueue(plugin);
-		}, 25);
+		},
 	});
 
-	plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
-		setTimeout(async () => {
-			// update the idleElapsedTime
-			idleElapsedTime = new Date();
-			// send a post request to the discord gateway
-			cardsRemaining = await plugin.queue.getNumRemainingCards();
-			await setAsQueue(plugin);
-		}, 25);
+	await plugin.app.registerCommand({
+		id: 'debug-set-editing',
+		name: 'Debug Set RPC as Editing',
+		description: 'Debugging command to set the RPC as editing',
+		action: async () => {
+			await setAsEditing(plugin);
+		},
 	});
 
-	plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
-		setTimeout(async () => {
-			justLeftQueue = true;
-			// send a post request to the discord gateway saying the user is idle
-			setIdle();
-		}, 25);
+
+	await plugin.app.registerCommand({
+		id: 'debug-set-idle',
+		name: 'Debug Set RPC as Idle',
+		description: 'Debugging command to set the RPC as idle',
+		action: async () => {
+			await setIdle(plugin, idleCheck);
+		},
 	});
 
-	plugin.event.addListener(AppEvents.GlobalRemChanged, undefined, async (data) => {
-		setTimeout(async () => {
-			if (elapsedGlobalRemChangeTime === null) {
-				elapsedGlobalRemChangeTime = new Date();
-			}
-			if (new Date().getTime() - elapsedGlobalRemChangeTime.getTime() < 500) return;
-			elapsedGlobalRemChangeTime = new Date();
-			await setAsEditing(plugin, data);
-		}, 25);
-	});
+	*/
 
-	plugin.event.addListener(AppEvents.FocusedRemChange, undefined, async (data) => {
-		setTimeout(async () => {
-			// update the idleElapsedTime
-			// if in queue, return
-			let inQueue = await plugin.window.isOnPage(PageType.Queue);
+	// // Defining listeners
+	// plugin.event.addListener(AppEvents.QueueEnter, undefined, async (data) => {
+	// 	setTimeout(async () => {
+	// 		idleElapsedTime = new Date();
+	// 		await setAsQueue(plugin);
+	// 	}, 25);
+	// });
 
-			if (inQueue) return;
-			if (justLeftQueue) {
-				justLeftQueue = false;
-				return;
-			}
-			await setAsEditing(plugin, data);
-		}, 25);
-	});
+	// plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
+	// 	setTimeout(async () => {
+	// 		idleElapsedTime = new Date();
+	// 		await setAsQueue(plugin);
+	// 	}, 25);
+	// });
+
+	// plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
+	// 	setTimeout(async () => {
+	// 		justLeftQueue = true;
+	// 	}, 25);
+	// });
+
+	// plugin.event.addListener(AppEvents.GlobalRemChanged, undefined, async (data) => {
+	// 	setTimeout(async () => {
+	// 		if (elapsedGlobalRemChangeTime === null) {
+	// 			elapsedGlobalRemChangeTime = new Date();
+	// 		}
+	// 		if (new Date().getTime() - elapsedGlobalRemChangeTime.getTime() < 500) return;
+	// 		elapsedGlobalRemChangeTime = new Date();
+	// 		await setAsEditing(plugin, data);
+	// 	}, 25);
+	// });
+
+	// plugin.event.addListener(AppEvents.FocusedRemChange, undefined, async (data) => {
+	// 	setTimeout(async () => {
+	// 		let inQueue = await plugin.window.isOnPage(PageType.Queue);
+
+	// 		if (inQueue) return;
+	// 		if (justLeftQueue) {
+	// 			justLeftQueue = false;
+	// 			return;
+	// 		}
+	// 		await setAsEditing(plugin, data);
+	// 	}, 25);
+	// });
 
 	plugin.track(async (reactivePlugin) => {
-		await pullSettings();
+		// TODO: on setting changes, delete all sessions, and then set the new settings
 	});
 
-	await pullSettings();
-
-	async function pullSettings() {
-		allowedIdleTime = await plugin.settings.getSetting('idle-time');
-		idleCheck = await plugin.settings.getSetting('idle-check');
-	}
-	setIdle();
+	const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');
+	console.log('hi');
+	setIdle(plugin, idleCheck);
 }
 
-async function setAsQueue(plugin: ReactRNPlugin) {
-	let cardsRemaining: number | any = await plugin.queue.getNumRemainingCards();
-	let showQueue: boolean = await plugin.settings.getSetting('show-queue');
-	let showQueueStats: boolean = await plugin.settings.getSetting('show-queue-stats');
-	let studyingQueueText: string = await plugin.settings.getSetting('studying-queue');
-
-	if (!showQueue) return;
-
-	if (studyingQueueText === '') {
-		studyingQueueText = 'Studying Queue';
-	}
-	studyingQueueText = studyingQueueText.replace('{cardsRemaining}', cardsRemaining.toString());
-	if (showQueueStats) {
-		sendPresence({
-			details: 'Flashcard Queue',
-			state: studyingQueueText,
-			largeImageKey: 'transparent_icon_logo',
-			largeImageText: `RemCord v${pluginVersion}`,
-			smallImageKey: 'transparent_icon_logo',
-			smallImageText: `Current Streak ${await plugin.queue.getCurrentStreak()}`,
-			startTimestamp: elapsedTime,
-			port: port,
-		});
-	} else {
-		sendPresence({
-			details: 'Flashcard Queue',
-			state: studyingQueueText,
-			largeImageKey: 'transparent_icon_logo',
-			largeImageText: `RemCord v${pluginVersion}`,
-			startTimestamp: elapsedTime,
-			port: port,
-		});
-	}
-}
-
-async function setAsEditing(plugin: ReactRNPlugin, data?: any) {
-	idleElapsedTime = new Date();
-
-	let currentRemId: string = 'null';
-
-	if (data.prevRemId) {
-		currentRemId = data.nextRemId;
-	} else if (data.remId) {
-		parentRemId = data.old.parent;
-		currentRemId = data.remId;
-	}
-
-	const parentRem: Rem | undefined = await plugin.rem.findOne(parentRemId);
-
-	let parentRemName: string = '{🔄 fetching name}';
-
-	// get the boolean setting 'only-documents'
-	const onlyDocuments: boolean = await plugin.settings.getSetting('only-documents');
-
-	if (parentRem) {
-		if (Array.isArray(parentRem.text)) {
-			parentRemName = parentRem.text[0];
-		} else if (typeof parentRem.text === 'string') {
-			parentRemName = parentRem.text;
-		}
-	}
-
-	const currentRem: Rem | undefined = await plugin.rem.findOne(currentRemId);
-	let currentRemName = '{🔄 fetching name}';
-	if (currentRem) {
-		if (Array.isArray(currentRem.text)) {
-			currentRemName = currentRem.text[0];
-		} else if (typeof currentRem.text === 'string') {
-			currentRemName = currentRem.text;
-		}
-	}
-
-	let editingText: string = await plugin.settings.getSetting('editing-text');
-	if (editingText.includes('{remName}')) {
-		editingText = editingText.replace('{remName}', currentRemName);
-	}
-
-	let editingDetails: string = await plugin.settings.getSetting('editing-details');
-	if (editingDetails.includes('{remName}')) {
-		editingDetails = editingDetails.replace('{remName}', parentRemName);
-	}
-
-	sendPresence({
-		details: editingDetails,
-		largeImageKey: 'transparent_icon_logo',
-		largeImageText: `RemCord v${pluginVersion}`,
-		smallImageKey: 'transparent_icon_logo',
-		smallImageText: `Study Streak: ${await plugin.queue.getCurrentStreak()}`,
-		startTimestamp: elapsedTime,
-		port: port,
-	});
-
-	if (await plugin.settings.getSetting('show-current-rem-name')) {
-		sendPresence({
-			details: editingDetails,
-			state: editingText,
-			largeImageKey: 'transparent_icon_logo',
-			largeImageText: `RemCord v${pluginVersion}`,
-			smallImageKey: 'transparent_icon_logo',
-			smallImageText: `Study Streak: ${await plugin.queue.getCurrentStreak()}`,
-			startTimestamp: elapsedTime,
-			port: port,
-		});
-	}
-	if (await plugin.settings.getSetting('incognito-mode')) {
-		sendPresence({
-			state: 'Editing Rems',
-			largeImageKey: 'transparent_icon_logo',
-			largeImageText: `RemCord v${pluginVersion}`,
-			smallImageKey: 'transparent_icon_logo',
-			smallImageText: `Study Streak: ${await plugin.queue.getCurrentStreak()}`,
-			startTimestamp: elapsedTime,
-			port: port,
-		});
-	}
-}
-
-function setIdle() {
-	if (!idleCheck) {
-		return;
-	}
-	sendPresence({
-		details: 'Idle',
-		state: 'Not Studying',
-		largeImageKey: 'transparent_icon_logo',
-		largeImageText: `RemCord v${pluginVersion}`,
-		smallImageKey: 'transparent_icon_logo',
-		startTimestamp: elapsedTime,
-		port: port,
-	});
-}
-
-async function onDeactivate(_: ReactRNPlugin) {
-	console.info('deactivating!');
+async function onDeactivate(plugin: ReactRNPlugin) {
+	await setActivity(plugin, undefined, true);
 }
 
 declareIndexPlugin(onActivate, onDeactivate);
