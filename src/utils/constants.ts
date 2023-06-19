@@ -3,10 +3,10 @@ export const discordUrl =
 export const backendURL = 'https://remcord-exchange-server.onrender.com';
 
 export const LARGE_IMAGE_QUEUE_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png'; // TODO: Create actual logo
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/flashcards.png';
 export const LARGE_IMAGE_IDLE_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png';
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-app.png';
 export const LARGE_IMAGE_EDITING_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png'; // TODO: Create actual logo
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/editing.png';
 export const SMALL_IMAGE_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png';
+	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-app.png';

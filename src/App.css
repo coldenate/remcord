@@ -1,1 +1,102 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 /* Add your plugin styles here. */
+
+/*
+Lots of classes hidden here to showcase the catppuccin color classes
+*/
+
+/* if on ipad screen size air/pro or below, scale down 25%  via tailwind */
+
+body {
+	@apply bg-ctp-base;
+}
+
+
+
+/* firefox */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--secondary) var(--primary); /* these variables are defined during a runtime in the function app() in app.tsx */
+}
+
+/* chorme edge and safari */
+
+*::-webkit-scrollbar {
+	width: 15px;
+}
+
+*::-webkit-scrollbar-track {
+	background: var(--primary);
+	border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: var(--secondary);
+	border-radius: 5px;
+	border: 3px solid var(--primary);
+}
+
+/* To make the card bigger, you can adjust the width values in the `@apply` rule. For example, to make it twice as wide on all screen sizes, you can change it to `w-full md:w-4/4 2xl:w-2/4`. If you want to make it even wider, you can increase the `w-2/4` or `w-1/4` values accordingly. */
+#card {
+		@apply w-auto md:w-2/4 2xl:w-1/2 bg-gradient-to-b p-6 rounded-3xl flex flex-col justify-center items-center outline outline-2 shadow-xl;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+#card h1 {
+	@apply font-black text-5xl lg:text-6xl mb-4 bg-gradient-to-r bg-clip-text text-transparent;
+}
+
+#card p {
+	@apply font-bold mb-4 text-center;
+}
+
+#card button {
+	@apply text-ctp-base px-4 py-2 rounded-xl font-bold text-xl transition duration-300 ease-in-out;
+}
+
+#palette {
+	@apply grid justify-items-center auto-rows-auto grid-cols-7 my-8 gap-4 transition-all duration-500 ease-in-out;
+}
+
+#palette > * {
+	@apply w-6 h-6 rounded-full transition-all duration-500 ease-in-out;
+}
+
+.navbutton-left {
+	@apply hover:bg-ctp-green/50 active:bg-ctp-green/80 py-2 pr-2 pl-4 rounded-l-xl outline outline-1 outline-ctp-overlay2/10;
+}
+
+.navbutton-center {
+	@apply hover:bg-ctp-green/50 active:bg-ctp-green/80 p-2 outline outline-1 outline-ctp-overlay2/10;
+}
+
+.navbutton-right {
+	@apply hover:bg-ctp-green/50 active:bg-ctp-green/80 py-2 pl-2 pr-4 rounded-r-xl outline outline-1 outline-ctp-overlay2/10;
+}
+
+.highlight-grad {
+	@apply from-ctp-blue to-ctp-green;
+	background: linear-gradient(to right, var(--tw-gradient-stops));
+	background-clip: text;
+	color: transparent;
+}
+
+.invitee-text {
+	@apply from-ctp-blue to-ctp-green;
+	background: linear-gradient(to right, var(--tw-gradient-stops));
+	background-clip: text;
+	color: transparent;
+	font-size: larger;
+	font-weight: 600;
+}
+
+.button-text {
+	color: var(--secondary) !important;
+}
+

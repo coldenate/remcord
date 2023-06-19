@@ -41,71 +41,65 @@ function DiscordAuthPopup() {
 	};
 
 	return (
-		<>
-			<div className="rounded-md border border-solid rn-clr-background-primary rn-clr-content-primary p-10">
-				<img
-					src="https://raw.githubusercontent.com/coldenate/RemCord/main/public/rn-hz-logo.svg"
-					className="max-h-[200px] w-auto p-4 mx-auto"
-				/>
-				<div className="flex text-center text-lg items-center pr-2">
-					Hey there! Thank you for using RemCord!
-				</div>
-				<div className="flex text-center text-lg items-center pr-2">
-					Click the "Link Discord Account" button to get started!
-				</div>
-				<div className="flex justify-center">
-					<a
-						href="TODO: Youtube Video"
-						target="_blank"
-						className="text-center text-lg items-center pr-2"
-					>
-						Here is a tutorial if you are confused
-					</a>
-				</div>
-				<div className="flex justify-center">
-					<button
-						className="font-bold py-4 px-4"
-						style={{
-							borderRadius: '50px',
-							background: '#5765f2',
-							// boxShadow: '20px 20px 60px #4a56ce, -20px -20px 60px #6474ff',
-						}}
-						onClick={handleLinkDiscord}
-					>
-						Link Discord Account
-					</button>
-				</div>
-				<div className="flex justify-center m-4">
-					<input
-						type="text"
-						value={code}
-						placeholder="Enter Code Here"
-						className="font-bold py-4 px-4"
-						onKeyDown={handleKeyDown}
-						style={
-							{
-								borderRadius: '50px',
-								background: '',
-								color: '#000000',
-							} as any
-						}
-						onChange={(e) => setCode(e.target.value)}
-					/>
-				</div>
-				<div className="flex justify-center">
-					<button
-						className="font-bold py-4 px-4"
-						style={{
-							borderRadius: '50px',
-							background: '#5765f2',
-						}}
-						onClick={handleSubmit}
-					>
-						Submit
-					</button>
-				</div>
+		<div className={`App grid transition-all duration-500 ease-in-out`} style={{ height: '100vh' }}>
+			<main className="flex flex-col justify-center items-center bg-gradient-to-b from-ctp-base to-ctp-crust p-6 transition-all duration-500 ease-in-out"></main>
+			<div id="card" className="from-ctp-mantle to-ctp-crust outline-ctp-green">
+				<h1 className="from-ctp-green to-ctp-blue text-center">RemCord Login</h1>
+
+				<>
+					<p>
+						<span className="text-ctp-text">
+							Click the button below to link your Discord account to RemCord!
+						</span>
+					</p>
+					<p>
+						<a href="TODO: HREF For YOUTUBE VID" className="text-ctp-red">
+							Youtube Tutorial
+						</a>
+					</p>
+					<div className="">
+						<button
+							className="bg-ctp-blue hover:bg-ctp-green active:bg-ctp-blue/75 m-2 text-ctp-text"
+							onClick={handleLinkDiscord}
+						>
+							Link Discord Account and Get Code
+						</button>
+					</div>
+					<div className=" font-mono rounded-sm left-0 text-center">
+						<div className="max-w-[500px]">
+							<span className="from-ctp-green to-ctp-blue highlight-grad break-words">
+								<input
+									type="text"
+									value={code}
+									placeholder="Enter Code Here"
+									className="font-bold py-4 px-4"
+									onKeyDown={handleKeyDown}
+									style={
+										{
+											borderRadius: '50px',
+											background: '',
+											color: '#000000',
+										} as any
+									}
+									onChange={(e) => setCode(e.target.value)}
+								/>
+							</span>
+						</div>
+					</div>
+
+					<div className="">
+						<button
+							className="bg-ctp-teal hover:bg-ctp-green active:bg-ctp-blue/75 m-2 text-ctp-text"
+							onClick={handleSubmit}
+						>
+							Submit
+						</button>
+					</div>
+
+					<div id="palette"></div>
+				</>
 			</div>
-		</>
+		</div>
 	);
 }
 
