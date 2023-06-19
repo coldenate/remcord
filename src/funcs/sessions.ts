@@ -1,15 +1,27 @@
 import { ReactRNPlugin } from '@remnote/plugin-sdk';
-import { backendURL } from '../widgets/index';
 import { create } from 'domain';
 import { Activity, Interaction, UserToken } from '../utils/interfaces';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { User } from 'discord-rpc';
+import { differenceInMinutes } from 'date-fns';
+import { backendURL } from '../utils/constants';
 
 let timeSinceLastUpdate: Date = new Date();
+let timeSinceLastRequestToDiscord: Date = new Date();
 
-// Behavior of storing the session token in the plugin.
-
-// It will always be of type Activity. Setting and getting we can expect it to be an object that fits the Activity interface.
+/**
+ * Determines if it is safe to make a request to Discord's API by checking the time elapsed since the last request.
+ * If the time elapsed is less than 5 seconds, the function waits for the remaining time before returning true.
+ * @returns A boolean indicating whether it is safe to make a request to Discord's API.
+ */
+async function safeToRequest(): Promise<boolean> {
+	const timeSinceLastRequest = new Date().getTime() - timeSinceLastRequestToDiscord.getTime();
+	const timeInSeconds = timeSinceLastRequest / 1000;
+	if (timeInSeconds < 5) {
+		await new Promise((resolve) => setTimeout(resolve, (5 - timeInSeconds) * 1000));
+	}
+	return true;
+}
 
 /**
  * Sets the session token in the plugin's storage.
@@ -48,7 +60,6 @@ async function setSessionToken(
  * @returns The session token that was retrieved.
  */
 async function getSessionToken(plugin: ReactRNPlugin): Promise<string | undefined> {
-	console.info('session token:', await plugin.storage.getSynced('sessionToken'));
 	let sessionToken: string | undefined | null = await plugin.storage.getSynced('sessionToken');
 	if (sessionToken === null) {
 		sessionToken = undefined;
@@ -115,22 +126,15 @@ export async function refreshUserToken(plugin: ReactRNPlugin): Promise<UserToken
  * @param clear - Whether to clear the session token and delete the session on the remote server before creating a new one. Default is false.
  * @returns The activity that was set.
  */
-import { differenceInMinutes } from 'date-fns';
-
-/**
- * Sets the activity in the plugin's storage and creates or edits a session on the remote server.
- * @param plugin - The plugin instance.
- * @param activity - The activity to be set.
- * @param clear - Whether to clear the session token and delete the session on the remote server before creating a new one. Default is false.
- * @returns The activity that was set.
- */
 export async function setActivity(
 	plugin: ReactRNPlugin,
 	clearToRun: boolean,
 	activity?: Activity,
-	clear?: boolean
+	clear?: boolean,
+	force?: boolean
 ) {
 	if (!clearToRun) {
+		console.warn('Not Clear to Run');
 		return;
 	}
 	const currentActivity: Activity | undefined = await plugin.storage.getSynced('activity');
@@ -139,15 +143,18 @@ export async function setActivity(
 		throw new Error('Target Activity is undefined');
 	}
 	if (currentActivity !== undefined && currentActivity !== null) {
-		// if there is no currentActivity already saved in syncedStorage
-		if (currentActivity.state === activity.state) {
-			// and if there is no state change
+		if (
+			currentActivity.state === activity.state &&
+			currentActivity.details === activity.details &&
+			!force
+		) {
+			// this checks if there was "no change" in the activity
 			const timeSinceLastUpdateInMinutes = differenceInMinutes(new Date(), timeSinceLastUpdate);
 			if (timeSinceLastUpdateInMinutes < 15) {
 				return;
 			}
 		}
-		timeSinceLastUpdate = new Date(); // reset timeSinceLastUpdate TODO: move this to the Activity Object // DEBATE: if the TODO is even necessary
+		timeSinceLastUpdate = new Date(); // NOTE: move this to the Activity Object. This can allow for a cross-platform solution, but its not a priority/necessary.
 	}
 
 	if (clear) {
@@ -173,6 +180,8 @@ export async function setActivity(
 		}
 		await plugin.storage.setSynced('activity', activity);
 	}
+	timeSinceLastRequestToDiscord = new Date();
+
 	return await plugin.storage.getSynced('activity');
 }
 
@@ -186,6 +195,7 @@ export async function deleteSessionOnRemote(
 	plugin: ReactRNPlugin,
 	clearToRun: boolean
 ): Promise<any> {
+	await safeToRequest();
 	if (!clearToRun) {
 		return;
 	}
@@ -213,6 +223,7 @@ export async function deleteSessionOnRemote(
 }
 
 async function createSessionOnRemote(plugin: ReactRNPlugin, activity: Activity) {
+	await safeToRequest();
 	const userToken = await getUserToken(plugin);
 	if (userToken == undefined) {
 		throw new Error('User token is undefined');
@@ -240,6 +251,7 @@ async function createSessionOnRemote(plugin: ReactRNPlugin, activity: Activity) 
  * @throws An error if the user token is undefined.
  */
 async function editSessionOnRemote(plugin: ReactRNPlugin, activity: Activity): Promise<string> {
+	await safeToRequest();
 	const sessionToken = await getSessionToken(plugin);
 	const userToken = await getUserToken(plugin);
 	if (userToken == undefined) {
@@ -270,4 +282,7 @@ async function editSessionOnRemote(plugin: ReactRNPlugin, activity: Activity): P
 		const newSessionToken = await getSessionToken(plugin);
 		return newSessionToken as string;
 	}
+}
+function differenceInMilliseconds(arg0: Date, timeSinceLastRequestToDiscord: Date) {
+	throw new Error('Function not implemented.');
 }

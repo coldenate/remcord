@@ -1,13 +1,16 @@
 import {
 	AppEvents,
+	Card,
 	declareIndexPlugin,
 	PageType,
 	ReactRNPlugin,
+	Rem,
+	RNPlugin,
 	WidgetLocation,
 } from '@remnote/plugin-sdk';
 import '../App.css';
 import { getPluginVersion } from '../funcs/getPluginVersion';
-import { setAsEditing, setAsQueue, setIdle } from '../funcs/presenceSet';
+import { setAsEditing, setAsQueue, setIdle } from '../funcs/setPresence';
 import {
 	deleteSessionOnRemote,
 	getUserToken,
@@ -15,6 +18,7 @@ import {
 	setActivity,
 } from '../funcs/sessions';
 import { getPossibleRPCVariables } from '../funcs/getRPCSetting';
+import { Activity } from '../utils/interfaces';
 
 let elapsedGlobalRemChangeTime: Date | null = null;
 let justLeftQueue: boolean = false;
@@ -24,16 +28,7 @@ export let elapsedTime: Date = new Date();
 export const pluginVersion = getPluginVersion();
 export let parentRemId: string | undefined = undefined;
 export let clearToRun: boolean = false;
-export const backendURL = 'http://0.0.0.0:5032';
-
-export const LARGE_IMAGE_QUEUE_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png'; // TODO: Create actual logo
-export const LARGE_IMAGE_IDLE_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png'; // TODO: Create actual logo
-export const LARGE_IMAGE_EDITING_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.pngpng'; // TODO: Create actual logo
-export const SMALL_IMAGE_URL: string =
-	'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png';
+export let lastPresenceUpdate: Date = new Date();
 
 async function checkIdle() {
 	const plugin = PLUGIN_PASSTHROUGH_VAR;
@@ -46,10 +41,29 @@ async function checkIdle() {
 	}
 }
 
-// hacky trick for func run scheduled as a job. TODO: find a better way to do this
+async function avoidExpire() {
+	const plugin = PLUGIN_PASSTHROUGH_VAR;
+	const elapsedMinutes = (new Date().getTime() - lastPresenceUpdate.getTime()) / 60000;
+	if (elapsedMinutes > 17) {
+		const currentActivity: Activity | undefined = await plugin.storage.getSynced<Activity>(
+			'activity'
+		);
+		if (!currentActivity) return;
+		await setActivity(plugin, clearToRun, currentActivity, false, true);
+		lastPresenceUpdate = new Date();
+	}
+}
+
+// hacky trick for func run scheduled as a job.
 setTimeout(() => {
 	setInterval(() => {
 		checkIdle();
+	}, 1000);
+}, 25);
+
+setTimeout(() => {
+	setInterval(() => {
+		avoidExpire();
 	}, 1000);
 }, 25);
 
@@ -68,14 +82,22 @@ async function onActivate(plugin: ReactRNPlugin) {
 		// 5 days
 		refreshUserToken(plugin);
 		clearToRun = true;
+	} else if (new Date().getTime() - lastRefreshTime.getTime() < 432000000) {
+		clearToRun = true;
 	}
 
 	// widgets
 
-	await plugin.app.registerWidget('discordAuth', WidgetLocation.RightSidebar, {
-		dimensions: { height: '100%' as 'auto', width: '100%' },
+	await plugin.app.registerWidget('discordAuth', WidgetLocation.Pane, {
+		dimensions: { height: 'auto', width: '100%' },
 		widgetTabIcon: 'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png',
 	});
+	await plugin.app.registerWidget('discordAuth', WidgetLocation.RightSidebar, {
+		dimensions: { height: 'auto', width: '100%' },
+		widgetTabIcon: 'https://raw.githubusercontent.com/coldenate/RemCord/main/public/logo-rn.png',
+	});
+
+	// rpc settings
 
 	const VARIABLE_NOTICE_STRING: string =
 		'Variables are in curly brackets. Possible variables are: ' +
@@ -180,16 +202,16 @@ async function onActivate(plugin: ReactRNPlugin) {
 
 	// settings
 
+	await plugin.settings.registerBooleanSetting({
+		id: 'notifs',
+		title: 'Plugin Notifications',
+		defaultValue: true,
+	});
+
 	// askuser if they want to show when they are studying their queue
 	await plugin.settings.registerBooleanSetting({
 		id: 'show-queue',
 		title: 'Display when using Queue',
-		defaultValue: true,
-	});
-	// ask user if they want to show their queue statistics
-	await plugin.settings.registerBooleanSetting({
-		id: 'show-queue-stats',
-		title: 'Display Queue Statistics',
 		defaultValue: true,
 	});
 
@@ -199,20 +221,6 @@ async function onActivate(plugin: ReactRNPlugin) {
 		description:
 			'If you prefer the privacy, turn this on so Discord does not show what you are editing.',
 		defaultValue: false,
-	});
-
-	await plugin.settings.registerBooleanSetting({
-		id: 'show-current-rem-name',
-		title: 'Show Current Rem Name',
-		description:
-			"If you prefer the privacy, turn this off so Discord doesn't show exactly what you are typing. Only the Parent Rem will be shown.",
-		defaultValue: false,
-	});
-
-	await plugin.settings.registerBooleanSetting({
-		id: 'notifs',
-		title: 'Plugin Notifications',
-		defaultValue: true,
 	});
 
 	await plugin.settings.registerBooleanSetting({
@@ -237,6 +245,16 @@ async function onActivate(plugin: ReactRNPlugin) {
 	});
 
 	// commands
+
+	await plugin.app.registerCommand({
+		id: 'link-discord',
+		name: 'Link Discord Account for RemNote Discord RPC',
+		description:
+			'Link your Discord account to RemNote so that you can display your RemNote status on Discord.',
+		action: async () => {
+			await plugin.window.openWidgetInPane('discordAuth');
+		},
+	});
 
 	await plugin.app.registerCommand({
 		id: 'force-delete-session',
@@ -273,13 +291,12 @@ async function onActivate(plugin: ReactRNPlugin) {
 
 	<----- Uncomment these Debug commands to use them ----->
 
-
 	await plugin.app.registerCommand({
 		id: 'debug-set-queue',
 		name: 'Debug Set RPC as Queue',
 		description: 'Debugging command to set the RPC as queue',
 		action: async () => {
-			await setAsQueue(plugin);
+			await setAsQueue(plugin, clearToRun, undefined);
 		},
 	});
 
@@ -288,77 +305,55 @@ async function onActivate(plugin: ReactRNPlugin) {
 		name: 'Debug Set RPC as Editing',
 		description: 'Debugging command to set the RPC as editing',
 		action: async () => {
-			await setAsEditing(plugin);
+			await setAsEditing(plugin, clearToRun, undefined);
 		},
 	});
-
 
 	await plugin.app.registerCommand({
 		id: 'debug-set-idle',
 		name: 'Debug Set RPC as Idle',
 		description: 'Debugging command to set the RPC as idle',
 		action: async () => {
-			await setIdle(plugin, idleCheck);
+			await setIdle(plugin, idleCheck, clearToRun);
 		},
 	});
 
+	<----- Uncomment those Debug commands to use them ----->
+
 	*/
 
-	// // Defining listeners
-	// plugin.event.addListener(AppEvents.QueueEnter, undefined, async (data) => {
-	// 	setTimeout(async () => {
-	// 		idleElapsedTime = new Date();
-	// 		await setAsQueue(plugin);
-	// 	}, 25);
-	// });
+	// Defining listeners
+	plugin.event.addListener(AppEvents.QueueLoadCard, undefined, async (data) => {
+		idleElapsedTime = new Date();
+		const card: Card | undefined = await plugin.card.findOne(data.cardId);
+		if (card == null || card == undefined) return;
+		setAsQueue(plugin, clearToRun, card);
+	});
 
-	// plugin.event.addListener(AppEvents.QueueCompleteCard, undefined, async (data) => {
-	// 	setTimeout(async () => {
-	// 		idleElapsedTime = new Date();
-	// 		await setAsQueue(plugin);
-	// 	}, 25);
-	// });
+	plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
+		idleElapsedTime = new Date();
+		await setIdle(plugin, idleCheck, clearToRun);
+	});
 
-	// plugin.event.addListener(AppEvents.QueueExit, undefined, async (data) => {
-	// 	setTimeout(async () => {
-	// 		justLeftQueue = true;
-	// 	}, 25);
-	// });
-
-	// plugin.event.addListener(AppEvents.GlobalRemChanged, undefined, async (data) => {
-	// 	setTimeout(async () => {
-	// 		if (elapsedGlobalRemChangeTime === null) {
-	// 			elapsedGlobalRemChangeTime = new Date();
-	// 		}
-	// 		if (new Date().getTime() - elapsedGlobalRemChangeTime.getTime() < 500) return;
-	// 		elapsedGlobalRemChangeTime = new Date();
-	// 		await setAsEditing(plugin, data);
-	// 	}, 25);
-	// });
-
-	// plugin.event.addListener(AppEvents.FocusedRemChange, undefined, async (data) => {
-	// 	setTimeout(async () => {
-	// 		let inQueue = await plugin.window.isOnPage(PageType.Queue);
-
-	// 		if (inQueue) return;
-	// 		if (justLeftQueue) {
-	// 			justLeftQueue = false;
-	// 			return;
-	// 		}
-	// 		await setAsEditing(plugin, data);
-	// 	}, 25);
-	// });
-
-	plugin.track(async (reactivePlugin) => {
-		// TODO: on setting changes, delete all sessions, and then set the new settings
+	plugin.event.addListener(AppEvents.GlobalOpenRem, undefined, async (data) => {
+		idleElapsedTime = new Date();
+		// data is a rem id
+		const rem: Rem | undefined = await plugin.rem.findOne(data.remId);
+		if (rem == null || rem == undefined) return;
+		setAsEditing(plugin, clearToRun, rem);
 	});
 
 	const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');
 	setIdle(plugin, idleCheck, clearToRun);
 }
 
+/**
+ * This function is called when the plugin is deactivated.
+ * It sets the activity of the plugin to idle and clears the `clearToRun` flag.
+ * @param plugin - The plugin instance.
+ */
 async function onDeactivate(plugin: ReactRNPlugin) {
-	await setActivity(plugin, clearToRun, undefined, true);
+	await setActivity(plugin, clearToRun, undefined, true, true);
 }
 
 declareIndexPlugin(onActivate, onDeactivate);

@@ -55,7 +55,7 @@ export const variableMethods: VariableMap = {
 export async function getRPCSetting(
 	Name: rpcSetting,
 	plugin: ReactRNPlugin,
-	inputVariable: Array<string | Rem> | undefined | Card
+	inputVariable: Array<string | Rem | undefined> | undefined | Card
 ): Promise<string> {
 	const raw_setting: string = await plugin.settings.getSetting(Name);
 
@@ -73,7 +73,6 @@ export async function getRPCSetting(
 			switch (variable.context) {
 				case 'editor': {
 					if (inputVariable === undefined) {
-						console.warn('Static variable ' + key + ' requires an input variable');
 						continue;
 					}
 
@@ -89,7 +88,6 @@ export async function getRPCSetting(
 				}
 				case 'queue': {
 					if (inputVariable === undefined) {
-						console.warn('Static variable ' + key + ' requires an input variable');
 						continue;
 					}
 					if (key === 'cardName') {
@@ -113,8 +111,8 @@ export async function getRPCSetting(
 	return setting;
 }
 
-export async function getPossibleRPCVariables(plugin: ReactRNPlugin): Promise<Record<string, any>> {
-	// TODO: make the returned string human readable/prettier
+export async function getPossibleRPCVariables(plugin: ReactRNPlugin): Promise<string> {
 	const variables: Array<string> = [...Object.keys(variableMethods)];
-	return variables;
+	const variableString: string = variables.join(', ');
+	return variableString;
 }

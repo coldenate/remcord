@@ -5,7 +5,7 @@ import { UserToken } from '../utils/interfaces';
 import { setUserToken } from '../funcs/sessions';
 import { discordUrl } from '../utils/constants';
 
-function DiscordAuthPopup() {
+function DiscordAuth() {
 	const [code, setCode] = useState('');
 	const [userToken, setUserToken] = useSyncedStorageState<UserToken | undefined>(
 		'userToken',
@@ -109,4 +109,4 @@ function DiscordAuthPopup() {
 	);
 }
 
-renderWidget(DiscordAuthPopup);
+renderWidget(DiscordAuth);

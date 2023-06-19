@@ -7,12 +7,12 @@ export interface Activity {
 	assets:
 		| undefined
 		| {
-				large_image: string | undefined;
-				large_text: string | undefined;
-				small_image: string | undefined;
-				small_text: string | undefined;
+				large_image?: string | undefined;
+				large_text?: string | undefined;
+				small_image?: string | undefined;
+				small_text?: string | undefined;
 		  };
-	platform: 'mobile' | 'desktop' | 'web';
+	platform: 'ios' | 'android' | 'desktop';
 }
 
 export interface UserToken {
