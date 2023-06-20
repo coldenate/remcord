@@ -30,6 +30,9 @@ export let parentRemId: string | undefined = undefined;
 export let clearToRun: boolean = false;
 export let lastPresenceUpdate: Date = new Date();
 
+/**
+ * Checks if the user has been idle for a certain amount of time and sets the user's presence accordingly.
+ */
 async function checkIdle() {
 	const plugin = PLUGIN_PASSTHROUGH_VAR;
 	const allowedIdleTime = (await plugin.settings.getSetting<number>('idle-time')) ?? 5;
@@ -41,6 +44,10 @@ async function checkIdle() {
 	}
 }
 
+/**
+ * Checks if the elapsed time since the last presence update is greater than 17 minutes and updates the user's presence accordingly.
+ * @returns {Promise<void>} A Promise that resolves when the function finishes executing.
+ */
 async function avoidExpire() {
 	const plugin = PLUGIN_PASSTHROUGH_VAR;
 	const elapsedMinutes = (new Date().getTime() - lastPresenceUpdate.getTime()) / 60000;
@@ -67,6 +74,10 @@ setTimeout(() => {
 	}, 1000);
 }, 25);
 
+/**
+ * Function that is called when the plugin is activated.
+ * @param plugin - The plugin object.
+ */
 async function onActivate(plugin: ReactRNPlugin) {
 	PLUGIN_PASSTHROUGH_VAR = plugin;
 

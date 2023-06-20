@@ -5,6 +5,9 @@ import { UserToken } from '../utils/interfaces';
 import { setUserToken } from '../funcs/sessions';
 import { discordUrl } from '../utils/constants';
 
+/**
+ * Renders a popup for Discord authentication.
+ */
 function DiscordAuthPopup() {
 	const [code, setCode] = useState('');
 	const [userToken, setUserToken] = useSyncedStorageState<UserToken | undefined>(

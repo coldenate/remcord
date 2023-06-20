@@ -52,6 +52,13 @@ export const variableMethods: VariableMap = {
 	},
 };
 
+/**
+ * Retrieves a specified RPC setting and replaces any variables in the setting with their corresponding values.
+ * @param Name - The name of the RPC setting to retrieve.
+ * @param plugin - The plugin instance to use for retrieving the setting.
+ * @param inputVariable - An optional (use undefined) input variable to use for replacing variables in the setting.
+ * @returns A Promise that resolves to the processed RPC setting.
+ */
 export async function getRPCSetting(
 	Name: rpcSetting,
 	plugin: ReactRNPlugin,
@@ -111,6 +118,11 @@ export async function getRPCSetting(
 	return setting;
 }
 
+/**
+ * Retrieves a string of all possible RPC variables that can be used in an RPC setting.
+ * @param plugin - The plugin instance to use for retrieving the variables.
+ * @returns A Promise that resolves to a string of all possible RPC variables.
+ */
 export async function getPossibleRPCVariables(plugin: ReactRNPlugin): Promise<string> {
 	const variables: Array<string> = [...Object.keys(variableMethods)];
 	const variableString: string = variables.join(', ');

@@ -11,6 +11,15 @@ import {
 
 let parentRemId: string = 'null';
 
+/**
+ * Sets the user's Discord presence to "Editing" and updates the activity details.
+ * @param plugin - The RemNote plugin instance.
+ * @param clearToRun - A boolean indicating whether the plugin is authorized to run.
+ * @param newRem - The new Rem being edited.
+ * @param prevRem - The previous Rem being edited.
+ * @param idleElapsedTime - The elapsed time since the user was last active.
+ * @returns The elapsed time since the user was last active.
+ */
 export async function setAsEditing(
 	plugin: ReactRNPlugin,
 	clearToRun: boolean,
@@ -62,6 +71,12 @@ export async function setAsEditing(
 	return idleElapsedTime;
 }
 
+/**
+ * Sets the user's Discord presence to "In Queue" and updates the activity details.
+ * @param plugin - The RemNote plugin instance.
+ * @param clearToRun - A boolean indicating whether the plugin is authorized to run.
+ * @param card - The current card being processed.
+ */
 export async function setAsQueue(
 	plugin: ReactRNPlugin,
 	clearToRun: boolean,
@@ -106,6 +121,12 @@ export async function setAsQueue(
 	}
 }
 
+/**
+ * Sets the user's Discord presence to "Idle" and updates the activity details.
+ * @param plugin - The RemNote plugin instance.
+ * @param idleCheck - A boolean indicating whether RemCord should check if the user is idle.
+ * @param clearToRun - A boolean indicating whether the plugin is authorized to run.
+ */
 export async function setIdle(plugin: ReactRNPlugin, idleCheck: boolean, clearToRun: boolean) {
 	if (!idleCheck) {
 		return;
