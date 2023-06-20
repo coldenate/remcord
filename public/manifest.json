@@ -2,7 +2,7 @@
 	"author": "coldenate",
 	"name": "RemCord | RemNote Discord RPC",
 	"description": "Customizable Discord Rich Presence Connection for RemNote. Works everywhere!",
-	"enableOnMobile": false,
+	"enableOnMobile": true,
 	"id": "remcord",
 	"repoUrl": "https://github.com/coldenate/remcord",
 	"manifestVersion": 1,
