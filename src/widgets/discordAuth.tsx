@@ -53,7 +53,11 @@ function DiscordAuthPopup() {
 						</span>
 					</p>
 					<p>
-						<a href="TODO: HREF For YOUTUBE VID" className="text-ctp-red">
+						<a
+							href=''
+							className="text-ctp-red"
+							onClick={() => window.open('https://youtu.be/zYc0n0ClLCk', '_blank')}
+						>
 							Youtube Tutorial
 						</a>
 					</p>
