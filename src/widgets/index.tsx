@@ -15,6 +15,7 @@ import {
 	deleteSessionOnRemote,
 	getUserToken,
 	refreshUserToken,
+	sendHeartbeat,
 	setActivity,
 } from '../funcs/sessions';
 import { getPossibleRPCVariables } from '../funcs/getRPCSetting';
@@ -72,6 +73,12 @@ setTimeout(() => {
 	setInterval(() => {
 		avoidExpire();
 	}, 1000);
+}, 25);
+
+setTimeout(() => {
+	setInterval(() => {
+		sendHeartbeat(PLUGIN_PASSTHROUGH_VAR);
+	}, 2500);
 }, 25);
 
 /**

@@ -120,6 +120,15 @@ export async function refreshUserToken(plugin: ReactRNPlugin): Promise<UserToken
 }
 
 /**
+ * Gets the activity from the plugin's storage.
+ * @param plugin - The plugin instance.
+ * @returns The activity that was retrieved.
+ */
+async function getActivity(plugin: ReactRNPlugin): Promise<Activity | undefined> {
+	return await plugin.storage.getSynced('activity');
+}
+
+/**
  * Sets the activity in the plugin's storage and creates or edits a session on the remote server.
  * @param plugin - The plugin instance.
  * @param activity - The activity to be set.
@@ -283,6 +292,31 @@ async function editSessionOnRemote(plugin: ReactRNPlugin, activity: Activity): P
 		return newSessionToken as string;
 	}
 }
+
+export async function sendHeartbeat(plugin: ReactRNPlugin) {
+	const sessionToken = await getSessionToken(plugin);
+	const userToken = await getUserToken(plugin);
+	const activity = await getActivity(plugin);
+	if (userToken == undefined) {
+		throw new Error('User token is undefined');
+	}
+	const interaction: Interaction = {
+		session_id: sessionToken,
+		token: userToken,
+		activity: activity,
+	};
+	try {
+		const response = await axios.post(`${backendURL}/heartbeat`, interaction);
+		return response.data;
+	} catch (error: unknown) {
+		if ((error as AxiosError).response && (error as AxiosError).response?.status === 404) {
+			await clearSession(plugin);
+			return error;
+		}
+		throw error;
+	}
+}
+
 function differenceInMilliseconds(arg0: Date, timeSinceLastRequestToDiscord: Date) {
 	throw new Error('Function not implemented.');
 }
