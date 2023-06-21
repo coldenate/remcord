@@ -20,6 +20,7 @@ import {
 } from '../funcs/sessions';
 import { getPossibleRPCVariables } from '../funcs/getRPCSetting';
 import { Activity } from '../utils/interfaces';
+import { DEBUGMODE } from '../utils/constants';
 
 let elapsedGlobalRemChangeTime: Date | null = null;
 let justLeftQueue: boolean = false;
@@ -78,7 +79,7 @@ setTimeout(() => {
 setTimeout(() => {
 	setInterval(() => {
 		sendHeartbeat(PLUGIN_PASSTHROUGH_VAR);
-	}, 2500);
+	}, 7000);
 }, 25);
 
 /**
@@ -362,7 +363,10 @@ async function onActivate(plugin: ReactRNPlugin) {
 	});
 
 	const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');
-	setIdle(plugin, idleCheck, clearToRun);
+	setTimeout(async () => {
+		if (DEBUGMODE) return;
+		setIdle(plugin, idleCheck, clearToRun);
+	}, 2500);
 }
 
 /**

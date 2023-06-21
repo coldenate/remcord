@@ -62,7 +62,7 @@ export const variableMethods: VariableMap = {
 export async function getRPCSetting(
 	Name: rpcSetting,
 	plugin: ReactRNPlugin,
-	inputVariable: Array<string | Rem | undefined> | undefined | Card
+	inputVariable: Array<string | undefined> | undefined | Card | Rem
 ): Promise<string> {
 	const raw_setting: string = await plugin.settings.getSetting(Name);
 
@@ -114,7 +114,6 @@ export async function getRPCSetting(
 			setting = setting.replace('{' + key + '}', String(variable));
 		}
 	}
-
 	return setting;
 }
 

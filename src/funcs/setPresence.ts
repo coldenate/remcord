@@ -56,14 +56,14 @@ export async function setAsEditing(
 	setActivity(plugin, clearToRun, {
 		type: 0,
 		application_id: '1083778386708676728',
-		name: await getRPCSetting('app-name', plugin, [newRem]),
-		details: await getRPCSetting('editing-details', plugin, [newRem]),
-		state: await getRPCSetting('editing-state', plugin, [newRem]),
+		name: await getRPCSetting('app-name', plugin, newRem),
+		details: await getRPCSetting('editing-details', plugin, newRem),
+		state: await getRPCSetting('editing-state', plugin, newRem),
 		assets: {
 			large_image: LARGE_IMAGE_EDITING_URL,
-			large_text: await getRPCSetting('editing-large-text', plugin, [newRem]),
+			large_text: await getRPCSetting('editing-large-text', plugin, newRem),
 			small_image: SMALL_IMAGE_URL,
-			small_text: await getRPCSetting('editing-small-text', plugin, [newRem]),
+			small_text: await getRPCSetting('editing-small-text', plugin, newRem),
 		},
 		platform: await getPlatform(plugin),
 	});

@@ -286,7 +286,9 @@ async function editSessionOnRemote(plugin: ReactRNPlugin, activity: Activity): P
 			(error as AxiosError).response?.status === 400
 		) {
 			await clearSession(plugin);
-			await createSessionOnRemote(plugin, activity);
+			setTimeout(async () => {
+				await createSessionOnRemote(plugin, activity); // this is a ratelimit protection.
+			}, 2500);
 		}
 		const newSessionToken = await getSessionToken(plugin);
 		return newSessionToken as string;
