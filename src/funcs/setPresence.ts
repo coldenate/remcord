@@ -50,6 +50,7 @@ export async function setAsEditing(
 			},
 			platform: await getPlatform(plugin),
 		});
+		return idleElapsedTime;
 	}
 
 	// rewrite to new format:
