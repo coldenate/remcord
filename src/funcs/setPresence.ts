@@ -29,8 +29,7 @@ export async function setAsEditing(
 ) {
 	idleElapsedTime = new Date();
 
-	// get the boolean setting 'only-documents'
-	const onlyDocuments: boolean = await plugin.settings.getSetting('only-documents');
+	const displayRootRems = await plugin.settings.getSetting('only-display-root-rems');
 
 	let incognito: boolean;
 	incognito = await plugin.settings.getSetting('incognito-mode');
@@ -53,6 +52,21 @@ export async function setAsEditing(
 		return idleElapsedTime;
 	}
 
+	if (displayRootRems && newRem !== undefined) {
+		let found: boolean = false;
+		let currentRem: Rem = newRem;
+		if (currentRem === undefined) return;
+		while (found === false) {
+			if (currentRem.parent === 'null' || currentRem.parent === null) {
+				found = true;
+			} else {
+				currentRem = (await plugin.rem.findOne(currentRem.parent)) as Rem;
+			}
+		}
+		if (found) {
+			newRem = currentRem;
+		}
+	}
 	// rewrite to new format:
 	setActivity(plugin, clearToRun, {
 		type: 0,

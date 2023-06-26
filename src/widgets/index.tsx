@@ -256,10 +256,9 @@ async function onActivate(plugin: ReactRNPlugin) {
 	});
 
 	await plugin.settings.registerBooleanSetting({
-		id: 'only-documents',
-		title: 'Restrict Display to Documents at Root',
-		description:
-			"This means whenever a rem you are editing has a root parent that is a document, it will show. Otherwise, RemCord won't display it at all.",
+		id: 'only-display-root-rems',
+		title: 'Only Display Root Rems',
+		description: "RemCord will always display a rem's root parent as the Rem you are editing.",
 		defaultValue: false,
 	});
 
