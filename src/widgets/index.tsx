@@ -13,6 +13,7 @@ import { getPluginVersion } from '../funcs/getPluginVersion';
 import { setAsEditing, setAsQueue, setIdle } from '../funcs/setPresence';
 import {
 	deleteSessionOnRemote,
+	getActivity,
 	getUserToken,
 	refreshUserToken,
 	sendHeartbeat,
@@ -21,10 +22,12 @@ import {
 import { getPossibleRPCVariables } from '../funcs/getRPCSetting';
 import { Activity } from '../utils/interfaces';
 import { DEBUGMODE } from '../utils/constants';
+import { getRemIdFromUrl } from '../funcs/getRemIdFromUrl';
 
 let elapsedGlobalRemChangeTime: Date | null = null;
 let justLeftQueue: boolean = false;
 let PLUGIN_PASSTHROUGH_VAR: ReactRNPlugin;
+let lastKnownRem: Rem;
 export let idleElapsedTime = new Date();
 export let elapsedTime: Date = new Date();
 export const pluginVersion = getPluginVersion();
@@ -98,7 +101,6 @@ async function onActivate(plugin: ReactRNPlugin) {
 		await plugin.storage.setSynced('lastTokenRefreshTime', new Date().getTime()); // we don't need to get the token on the initialization because the user would have to have logged in already
 		clearToRun = true;
 	} else if (new Date().getTime() - lastRefreshTime.getTime() > 432000000) {
-		// 5 days
 		refreshUserToken(plugin);
 		clearToRun = true;
 	} else if (new Date().getTime() - lastRefreshTime.getTime() < 432000000) {
@@ -359,6 +361,26 @@ async function onActivate(plugin: ReactRNPlugin) {
 		const rem: Rem | undefined = await plugin.rem.findOne(data.remId);
 		if (rem == null || rem == undefined) return;
 		setAsEditing(plugin, clearToRun, rem);
+		lastKnownRem = rem;
+	});
+
+	plugin.event.addListener(AppEvents.EditorTextEdited, undefined, async () => {
+		idleElapsedTime = new Date();
+		const activity: Activity | undefined = await getActivity(plugin);
+		if (!activity) {
+			return;
+		}
+		if (activity.state == 'Idle') {
+			const remId: string | undefined = await getRemIdFromUrl(plugin);
+			if (!remId) {
+				return;
+			}
+			const rem: Rem | undefined = await plugin.rem.findOne(remId);
+			if (!rem) {
+				return;
+			}
+			setAsEditing(plugin, clearToRun, rem);
+		}
 	});
 
 	const idleCheck = await plugin.settings.getSetting<boolean>('idle-check');

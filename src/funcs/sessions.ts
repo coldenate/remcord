@@ -110,13 +110,20 @@ export async function refreshUserToken(plugin: ReactRNPlugin): Promise<UserToken
 		token: userToken,
 	};
 
-	const response = await axios.post(`${backendURL}/refresh`, interaction);
-	const newUserToken: UserToken = response.data;
-	if (newUserToken === undefined) {
-		throw new Error('User token is undefined');
+	try {
+		const response = await axios.post(`${backendURL}/refresh`, interaction, { timeout: 5000 });
+		const newUserToken: UserToken = response.data as UserToken;
+		if (newUserToken === undefined) {
+			throw new Error('User token is undefined');
+		}
+		await setUserToken(plugin, newUserToken);
+		return newUserToken;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+			plugin.app.toast("You're not logged into Discord. Please log in to Discord and try again.");
+		}
+		throw error;
 	}
-	await setUserToken(plugin, newUserToken);
-	return newUserToken;
 }
 
 /**
@@ -124,7 +131,7 @@ export async function refreshUserToken(plugin: ReactRNPlugin): Promise<UserToken
  * @param plugin - The plugin instance.
  * @returns The activity that was retrieved.
  */
-async function getActivity(plugin: ReactRNPlugin): Promise<Activity | undefined> {
+export async function getActivity(plugin: ReactRNPlugin): Promise<Activity | undefined> {
 	return await plugin.storage.getSynced('activity');
 }
 
@@ -227,6 +234,9 @@ export async function deleteSessionOnRemote(
 			await clearSession(plugin);
 			return error;
 		}
+		if ((error as AxiosError).response && (error as AxiosError).response?.status === 401) {
+			plugin.app.toast("You're not logged into Discord. Please log in to Discord and try again.");
+		}
 		throw error;
 	}
 }
@@ -244,13 +254,20 @@ async function createSessionOnRemote(plugin: ReactRNPlugin, activity: Activity) 
 	if ((await getSessionToken(plugin)) !== undefined) {
 		throw new Error('There is already a session token');
 	}
-	const response: AxiosResponse = await axios.post(`${backendURL}/create`, interaction);
-	const sessionToken: string = response.data;
-	if (sessionToken == undefined) {
-		throw new Error('Session token is undefined');
+	try {
+		const response: AxiosResponse = await axios.post(`${backendURL}/create`, interaction);
+		const sessionToken: string = response.data;
+		if (sessionToken == undefined) {
+			throw new Error('Session token is undefined');
+		}
+		await setSessionToken(plugin, sessionToken);
+		return sessionToken;
+	} catch (error: unknown) {
+		if (axios.isAxiosError(error) && error.response && error.response.status === 401) {
+			plugin.app.toast("You're not logged into Discord. Please log in to Discord and try again.");
+		}
+		throw error;
 	}
-	await setSessionToken(plugin, sessionToken);
-	return sessionToken;
 }
 /**
  * Edits the session on the remote server with the given activity.
@@ -289,6 +306,10 @@ async function editSessionOnRemote(plugin: ReactRNPlugin, activity: Activity): P
 			setTimeout(async () => {
 				await createSessionOnRemote(plugin, activity); // this is a ratelimit protection.
 			}, 2500);
+		}
+		if ((error as AxiosError).response && (error as AxiosError).response?.status === 401) {
+			plugin.app.toast("You're not logged into Discord. Please log in to Discord and try again.");
+			throw error;
 		}
 		const newSessionToken = await getSessionToken(plugin);
 		return newSessionToken as string;
