@@ -10,11 +10,11 @@
 
 ## 🚀 Overview
 
-Welcome to RemCord, a solution for bridging Discord with RemNote, designed to enhance your study experience by letting your buddies on Discord see your amazing flashcard progress! (... or... your not so great flashcard progress. 😅)
+**RemCord** connects Discord with RemNote. It allows your Discord friends to see your flashcard progress, whether it's impressive or not so great. 😅
 
-### ✨ Features
+### ✨ Key Features
 
-- **Seamless Integration**: RemCord connects Discord with RemNote, creating a unified experience for users.
+- **Seamless Integration**: RemCord links Discord with RemNote your RemNote Account, providing a unified experience.
 - **Study Companion**: Use RemCord while studying on RemNote to share your progress with your Discord community.
 - **Visualize Learning**: Showcase your learning achievements to motivate yourself and others.
 
@@ -22,7 +22,7 @@ Welcome to RemCord, a solution for bridging Discord with RemNote, designed to en
 
 If you prefer a step-by-step guide, watch our [Youtube Tutorial](https://www.youtube.com/watch?v=zYc0n0ClLCk) for setting up RemCord.
 
-## 🛠️ Installation
+## 🛠️ How to Get Started
 
 1. Open RemNote and download the RemCord Plugin from the [RemNote Plugin Store](https://remnote.com/plugins/remcord).
 2. Go to any Rem in RemNote (even an empty one is fine) and type `/link`.
@@ -30,7 +30,7 @@ If you prefer a step-by-step guide, watch our [Youtube Tutorial](https://www.you
    - On the widget that pops up, click on `Link Discord Account and Get Code`.
      - Copy the code that pops up.
    - Paste your code into the text box in the RemCord widget and click `Submit`.
-3. You're all set! Start studying and let RemCord share your progress with your Discord community!
+3. You're all set! Start studying, and let RemCord share your progress with your Discord community!
 
 ## 🙏 Special Thanks
 
@@ -45,8 +45,7 @@ The following data is sent to Discord's API:
 - User-defined RPC Strings
 - The Platform of choice
 
-This data is solely used for the purpose of enabling Discord RPC functionality and is not stored or used for any other purposes. For more information on how Discord handles user data, please refer to Discord's Privacy Policy.
-
+This info is only used to power Discord RPC features, and nothing else. For more about how Discord handles your data, check out [Discord's Privacy Policy](https://discord.com/privacy).
 
 ---
 
