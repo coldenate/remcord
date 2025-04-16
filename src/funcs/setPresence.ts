@@ -34,24 +34,6 @@ export async function setAsEditing(
 	let incognito: boolean;
 	incognito = await plugin.settings.getSetting('incognito-mode');
 
-	if (incognito || newRem === undefined) {
-		setActivity(plugin, clearToRun, {
-			type: 0,
-			application_id: '1083778386708676728',
-			name: await getRPCSetting('app-name', plugin, undefined),
-			details: await getRPCSetting('editing-details', plugin, undefined),
-			state: await getRPCSetting('editing-state', plugin, undefined),
-			assets: {
-				large_image: LARGE_IMAGE_EDITING_URL,
-				large_text: await getRPCSetting('editing-large-text', plugin, undefined),
-				small_image: SMALL_IMAGE_URL,
-				small_text: await getRPCSetting('editing-small-text', plugin, undefined),
-			},
-			platform: await getPlatform(plugin),
-		});
-		return idleElapsedTime;
-	}
-
 	if (displayRootRems && newRem !== undefined) {
 		let found: boolean = false;
 		let currentRem: Rem = newRem;
@@ -64,9 +46,42 @@ export async function setAsEditing(
 			}
 		}
 		if (found) {
-			newRem = currentRem;
+			// Ensure the root Rem has proper text formatting
+			if (currentRem && typeof currentRem.text !== 'string') {
+				// Create a new "clean" Rem object with just the properties we need
+				// This avoids the [object Object] issue by ensuring text is properly stringified
+				const cleanRem = {
+					...currentRem,
+					text: String(currentRem.text || '')
+				};
+				newRem = cleanRem as unknown as Rem;
+			} else {
+				newRem = currentRem;
+			}
 		}
 	}
+
+	if (incognito || newRem === undefined) {
+		// Use simple text for privacy mode and explicitly set details to "Hidden" instead of using the template
+		const privacyRem = newRem ? ["Privacy Mode"] : undefined;
+
+		setActivity(plugin, clearToRun, {
+			type: 0,
+			application_id: '1083778386708676728',
+			name: await getRPCSetting('app-name', plugin, privacyRem),
+			details: await getRPCSetting('editing-details', plugin, privacyRem),
+			state: await getRPCSetting('editing-state', plugin, privacyRem),
+			assets: {
+				large_image: LARGE_IMAGE_EDITING_URL,
+				large_text: await getRPCSetting('editing-large-text', plugin, privacyRem),
+				small_image: SMALL_IMAGE_URL,
+				small_text: await getRPCSetting('editing-small-text', plugin, privacyRem),
+			},
+			platform: await getPlatform(plugin),
+		});
+		return idleElapsedTime;
+	}
+
 	// rewrite to new format:
 	setActivity(plugin, clearToRun, {
 		type: 0,
@@ -119,17 +134,20 @@ export async function setAsQueue(
 			platform: await getPlatform(plugin),
 		});
 	} else if (incognito) {
+		// Use a string array for privacy mode to match expected type
+		const privacyCard = ["Privacy Mode"];
+
 		setActivity(plugin, clearToRun, {
 			type: 0,
 			application_id: '1083778386708676728',
-			name: await getRPCSetting('app-name', plugin, undefined),
+			name: await getRPCSetting('app-name', plugin, privacyCard),
 			details: 'Flashcard Queue',
-			state: await getRPCSetting('queue-state', plugin, undefined),
+			state: await getRPCSetting('queue-state', plugin, privacyCard),
 			assets: {
 				large_image: LARGE_IMAGE_QUEUE_URL,
-				large_text: await getRPCSetting('queue-large-text', plugin, undefined),
+				large_text: await getRPCSetting('queue-large-text', plugin, privacyCard),
 				small_image: SMALL_IMAGE_URL,
-				small_text: await getRPCSetting('queue-small-text', plugin, undefined),
+				small_text: await getRPCSetting('queue-small-text', plugin, privacyCard),
 			},
 			platform: await getPlatform(plugin),
 		});
